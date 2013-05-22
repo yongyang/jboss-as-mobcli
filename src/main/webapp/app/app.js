@@ -23,22 +23,15 @@ Ext.application({
                     scrollable: true
                 },
                 items: [
-                    {
-                        title: 'Input',
-                        xtype: 'container',
-                        layout: 'fit',
-                        iconCls: 'search',
-                        cls: 'card dark',
-                        badgeText: '4',
-                        items:[
-                            {
-                                docked: 'top',
-                                html: 'Path:///'
-                            },
-                            Ext.create('Mobcli.NodeList')
+                        Ext.create("Ext.NavigationView",{
+                            title: 'input',
+                            items:[
+                                    Ext.create("Mobcli.NodeList")
+
+                            ]
+                        }),
+//                            Ext.create('Mobcli.InputView'),
                             
-                        ]
-                    },
                     {
                         title: 'Output',
                         id: 'tab3',

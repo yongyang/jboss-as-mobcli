@@ -60,24 +60,47 @@ Ext.define('Mobcli.NodeList',
     {
         extend: 'Ext.List',
         config: {
+            title: "Path://",
                     store:  Ext.create("Mobcli.TestStore"),
                     itemTpl: '<div>{lastName} - {firstName}</div>',
-                    onItemDisclosure: function(record, btn, index) {
-                        Ext.Msg.alert('Tap', 'Disclose more info of ' + index + ', ' + record);
-                    }
-/*
+                    onItemDisclosure: true,
                     listeners: {
                         scope: this,
                         itemtap: function() {
-                            Ext.Msg.alert("hello", "Tap");
+                            Ext.Msg.alert("Tap", "Tap");
+                            return false;
+                        },
+                        disclose: function(el, record, target, index, e, eOpts ) {
+                            e.stopEvent();
+                            Ext.Msg.alert("Dis", "Disclose");
+                            return false;
                         }
                     }
-*/
+
         },
         
         constructor: function(config) {
+            config = config?  config : {};
             this.callParent(config);
+            this.initConfig(config)
         }
     }
 );
+
+Ext.define('Mobcli.InputView',{
+    extend: 'Ext.NavigationView',
+    config: {
+        title: 'input'
+/*
+        defaults: {
+            layout: 'fit'
+        },
+*/
+    },
+    constructor: function(config) {
+        config = config?  config : {};
+        this.callParent(config);
+        this.initConfig(config);
+    }
+});
 
