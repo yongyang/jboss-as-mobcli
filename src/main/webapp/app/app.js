@@ -5,6 +5,33 @@ Ext.require('Ext.tab.Panel');
 Ext.application({
     launch: function() {
 
+        var inputNodeList = Ext.create('Ext.List',{
+            title: "Path://",
+            store:  Ext.create("Mobcli.TestStore"),
+            itemTpl: '<div>{lastName} - {firstName}</div>',
+            onItemDisclosure: true,
+            listeners: {
+                scope: this,
+                itemtap: function() {
+                    Ext.Msg.alert("Tap", "Tap");
+                },
+                disclose: function(el, record, target, index, e, eOpts ) {
+                    e.stopEvent();
+                    inputNavigationView.push({
+                        title: 'Commands',
+                        html: 'Command List'
+                    });
+                }
+            }
+
+        });
+
+        var inputNavigationView = Ext.create("Ext.NavigationView",{
+            title: 'input',
+            items:[inputNodeList]
+        });
+
+
         Ext.Viewport.add(
             Ext.create("Ext.tab.Panel", {
                 id: 'mainTabPanel',
@@ -23,13 +50,7 @@ Ext.application({
                     scrollable: true
                 },
                 items: [
-                        Ext.create("Ext.NavigationView",{
-                            title: 'input',
-                            items:[
-                                    Ext.create("Mobcli.NodeList")
-
-                            ]
-                        }),
+                        inputNavigationView,
 //                            Ext.create('Mobcli.InputView'),
                             
                     {
