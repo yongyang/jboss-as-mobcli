@@ -17,7 +17,7 @@ import java.util.concurrent.Executors;
 /**
  * @author <a href="mailto:yyang@redhat.com">Yong Yang</a>
  */
-@WebServlet(urlPatterns = "/mobcli", asyncSupported = true)
+@WebServlet(urlPatterns = "/cliservlet/*", asyncSupported = true)
 public class MobcliServlet extends HttpServlet {
 
     private static final ModelControllerProxy proxy = ModelControllerProxy.getInstance();
@@ -61,6 +61,14 @@ public class MobcliServlet extends HttpServlet {
         asyncContext.addListener(asyncListener);
 
         String pathInfo = req.getPathInfo();
+        if(pathInfo.startsWith("/")) {
+            pathInfo=pathInfo.substring(1);
+        }
+
+        if(pathInfo.endsWith("/")) {
+            pathInfo=pathInfo.substring(0, pathInfo.length()-1);
+        }
+        
         if(pathInfo.equals("resource")) { // list all resources of an address path
             executor.execute(new Runnable() {
                 public void run() {
@@ -86,9 +94,9 @@ public class MobcliServlet extends HttpServlet {
         try {
             //proxy.execute("", "", "");
             PrintWriter writer = resp.getWriter();
-            //TODO:
+            writer.println(proxy.readResourceNode("127.0.0.1", 9999, "/").toJSONString());
         }
-        catch (IOException e) {
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

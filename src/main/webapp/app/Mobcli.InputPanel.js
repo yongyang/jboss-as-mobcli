@@ -7,7 +7,6 @@ Ext.define('Mobcli.TestModel', {
 
 Ext.define("Mobcli.TestStore", {
     extend: 'Ext.data.Store',
-    alias: 'store.List',
     config: {
         model: 'Mobcli.TestModel',
         sorters: 'firstName',
@@ -56,27 +55,27 @@ var l = Ext.create("Ext.List", {
 
 */
 
-Ext.define('Mobcli.NodeList',
-    {
+Ext.define('Mobcli.NodeList', {
         extend: 'Ext.List',
+        xtype: 'moblci_nodelist',
         config: {
-            title: "Path://",
-                    store:  Ext.create("Mobcli.TestStore"),
-                    itemTpl: '<div>{lastName} - {firstName}</div>',
-                    onItemDisclosure: true,
-                    listeners: {
-                        scope: this,
-                        itemtap: function() {
-                            Ext.Msg.alert("Tap", "Tap");
-                            return false;
-                        },
-                        disclose: function(el, record, target, index, e, eOpts ) {
-                            e.stopEvent();
-                            Ext.Msg.alert("Dis", "Disclose");
-                            return false;
-                        }
-                    }
-
+            store:  Ext.create("Mobcli.TestStore"),
+            itemTpl: '<div>{lastName} - {firstName}</div>',
+            onItemDisclosure: true,
+            listeners: {
+                scope: this,
+                itemtap: function() {
+                    Ext.Msg.alert("Tap", "Tap");
+                },
+                disclose: function(el, record, target, index, e, eOpts ) {
+                    e.stopEvent();
+                    Ext.getCmp('inputNavigationView').push({
+                        title: 'Commands',
+                        html: 'Command List'
+                    });
+                    return false;
+                }
+            }
         },
         
         constructor: function(config) {
@@ -87,20 +86,69 @@ Ext.define('Mobcli.NodeList',
     }
 );
 
-Ext.define('Mobcli.InputView',{
-    extend: 'Ext.NavigationView',
-    config: {
-        title: 'input'
-/*
-        defaults: {
-            layout: 'fit'
+
+Ext.define('Mobcli.NodeNestedList', {
+        extend: 'Ext.NestedList',
+        xtype: 'moblci_nestednodelist',
+        config: {
+            store:  Ext.create("Mobcli.TestStore"),
+            itemTpl: '<div>{lastName} - {firstName}</div>',
+            displayField: 'name',
+            onItemDisclosure: true,
+            listeners: {
+                scope: this,
+                itemtap: function() {
+                    Ext.Msg.alert("Tap", "Tap");
+                },
+                disclose: function(el, record, target, index, e, eOpts ) {
+                    e.stopEvent();
+                    Ext.getCmp('inputNavigationView').push({
+                        title: 'Commands',
+                        html: 'Command List'
+                    });
+                    return false;
+                }
+            },
+
+            masked: {
+                xtype: 'loadmask',
+                message: 'loading...'
+            }
+
         },
-*/
-    },
-    constructor: function(config) {
-        config = config?  config : {};
-        this.callParent(config);
-        this.initConfig(config);
+
+        constructor: function(config) {
+            config = config?  config : {};
+            this.callParent(config);
+            this.initConfig(config)
+        }
+    }
+);
+
+Ext.define('Mobcli.NodeModel', {
+    extend: 'Ext.data.Model',
+    config: {
+        fields: [
+            {name: 'address', type: 'string'}, // full address
+            {name: 'name', type: 'string'}, // name
+            {name: 'ispath', type: 'boolean'} // is path or property, path is not leaf
+        ]
     }
 });
 
+Ext.define('Mobcli.TreeStore', {
+    extend: 'Ext.data.TreeStore',
+    model: 'Mobcli.ListModel',
+    sorters: 'name',
+    grouper: function(record) {
+        return record.get('ispath') ? "Property" : "Path";
+    },
+    autoLoad: 'true',
+    proxy: {
+        url: 'cliservlet/resource',
+        type: 'ajax',
+        reader: {
+            type: 'json'
+        }
+    }
+});

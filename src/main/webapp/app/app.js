@@ -5,38 +5,20 @@ Ext.require('Ext.tab.Panel');
 Ext.application({
     launch: function() {
 
-        var inputNodeList = Ext.create('Ext.List',{
-            title: "Path://",
-            store:  Ext.create("Mobcli.TestStore"),
-            itemTpl: '<div>{lastName} - {firstName}</div>',
-            onItemDisclosure: true,
-            listeners: {
-                scope: this,
-                itemtap: function() {
-                    Ext.Msg.alert("Tap", "Tap");
-                },
-                disclose: function(el, record, target, index, e, eOpts ) {
-                    e.stopEvent();
-                    inputNavigationView.push({
-                        title: 'Commands',
-                        html: 'Command List'
-                    });
-                }
-            }
-
-        });
-
         var inputNavigationView = Ext.create("Ext.NavigationView",{
-            title: 'input',
-            items:[inputNodeList]
+            id: 'inputNavigationView',
+            title: 'Input',
+            cls: 'card dark',
+            iconCls: 'search',
+            items:[
+                Ext.create('Mobcli.NodeList', {
+                    title: "Path://"
+                })
+            ]
         });
-
-
-        Ext.Viewport.add(
-            Ext.create("Ext.tab.Panel", {
+        
+        var tabPanel =  Ext.create("Ext.tab.Panel", {
                 id: 'mainTabPanel',
-//                icon: 'touch/resources/images/icon1.png',
-                activeTab: 0,
                 ui: 'dark',
                 tabBar: {
 //                    ui: Ext.filterPlatform('blackberry') || Ext.filterPlatform('ie10') ? 'dark' : 'light',
@@ -50,9 +32,7 @@ Ext.application({
                     scrollable: true
                 },
                 items: [
-                        inputNavigationView,
-//                            Ext.create('Mobcli.InputView'),
-                            
+                    inputNavigationView,                            
                     {
                         title: 'Output',
                         id: 'tab3',
@@ -83,6 +63,7 @@ Ext.application({
                         cls: 'card'
                     }
                 ]
-                }));
+                });
+        Ext.Viewport.add(tabPanel);
     }
 });

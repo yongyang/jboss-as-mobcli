@@ -7,6 +7,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,6 +64,36 @@ public class ModelControllerProxy {
         cmdCtxMap.put(host+":"+port, asInstanceContext);
     }
 
+    // wrapper method for read-resource
+    public NodeObject readResourceNode(String ip, int port, String addressPath) throws Exception {
+        
+        String[] commands = new String[]{
+                addressPath + ":read-resource(include-runtime=true,include-defaults=true)",
+                addressPath + ":read-resource-description(recursive-depth=1)", //red children's description one time, so the children's tooltip can be displayed after loading
+                addressPath + ":read-children-types"
+        };
+
+        ModelNode[] result = executeBatchModelNode(ip, port, commands);
+
+        ModelNode readResourceModelNode = result[0];
+        ModelNode readResourceDescriptionModelNode = result[1];
+        ModelNode readChildrenTypeModelNode = result[2];
+
+        NodeObject nodeObject = new NodeObject(readResourceModelNode,readResourceDescriptionModelNode, readChildrenTypeModelNode);
+        
+        
+        ModelNode resourceResponse = result[0].get("result"); //result modelnode
+        if(resourceResponse.isDefined()) {
+            for(ModelNode node: resourceResponse.asList()){
+                Property prop = node.asProperty();
+                String resource = prop.getName();
+                ModelNode readOperationNamesModelNode = executeModelNode(ip, port, addressPath + resource + "=*/:read-operation-names");
+                nodeObject.addGenericOperationResult(resource, readOperationNamesModelNode);
+            }
+        }
+        return nodeObject;
+    }
+
     public String execute(String ip, int port, String command) throws Exception {
         return executeModelNode(ip, port, command).toJSONString(false);
     }
@@ -81,8 +112,8 @@ public class ModelControllerProxy {
         }
     }
 
-    public String[] execute(String ip, int port, String[] commands) throws Exception {
-        ModelNode[] nodes = executeModelNode(ip, port, commands);
+    public String[] executeBatch(String ip, int port, String[] commands) throws Exception {
+        ModelNode[] nodes = executeBatchModelNode(ip, port, commands);
         String[] jsons = new String[nodes.length];
         for(int i=0; i<nodes.length; i++){
             jsons[i] = nodes[i].toJSONString(false);
@@ -90,7 +121,7 @@ public class ModelControllerProxy {
         return jsons;
     }
 
-    private ModelNode[] executeModelNode(String ip, int port, String[] commands) throws Exception {
+    private ModelNode[] executeBatchModelNode(String ip, int port, String[] commands) throws Exception {
         String key = ip + ":" +port;
         if(!cmdCtxMap.containsKey(key)) {
             initASInstanceContext(ip, port, "", "");
