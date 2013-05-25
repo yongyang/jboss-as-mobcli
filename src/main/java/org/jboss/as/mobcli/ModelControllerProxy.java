@@ -65,7 +65,7 @@ public class ModelControllerProxy {
     }
 
     // wrapper method for read-resource
-    public NodeObject readResourceNode(String ip, int port, String addressPath) throws Exception {
+    public ResourceObject readResourceNode(String ip, int port, String addressPath) throws Exception {
         
         String[] commands = new String[]{
                 addressPath + ":read-resource(include-runtime=true,include-defaults=true)",
@@ -79,7 +79,7 @@ public class ModelControllerProxy {
         ModelNode readResourceDescriptionModelNode = result[1];
         ModelNode readChildrenTypeModelNode = result[2];
 
-        NodeObject nodeObject = new NodeObject(readResourceModelNode,readResourceDescriptionModelNode, readChildrenTypeModelNode);
+        ResourceObject resourceObject = new ResourceObject(readResourceModelNode,readResourceDescriptionModelNode, readChildrenTypeModelNode);
         
         
         ModelNode resourceResponse = result[0].get("result"); //result modelnode
@@ -88,10 +88,10 @@ public class ModelControllerProxy {
                 Property prop = node.asProperty();
                 String resource = prop.getName();
                 ModelNode readOperationNamesModelNode = executeModelNode(ip, port, addressPath + resource + "=*/:read-operation-names");
-                nodeObject.addGenericOperationResult(resource, readOperationNamesModelNode);
+                resourceObject.addGenericOperationResult(resource, readOperationNamesModelNode);
             }
         }
-        return nodeObject;
+        return resourceObject;
     }
 
     public String execute(String ip, int port, String command) throws Exception {

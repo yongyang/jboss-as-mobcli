@@ -1,5 +1,7 @@
 package org.jboss.as.mobcli;
 
+import org.json.simple.JSONObject;
+
 import javax.servlet.AsyncContext;
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
@@ -11,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -92,9 +95,11 @@ public class MobcliServlet extends HttpServlet {
         asyncContext.getRequest();
         ServletResponse resp = asyncContext.getResponse();
         try {
-            //proxy.execute("", "", "");
-            PrintWriter writer = resp.getWriter();
-            writer.println(proxy.readResourceNode("127.0.0.1", 9999, "/").toJSONString());
+            JSONObject resourceJSON = proxy.readResourceNode("127.0.0.1", 9999, "/").toJSONObject();
+            JSONObject resultJSON = new JSONObject();
+            resultJSON.put("success", true);
+            resultJSON.put("data", resourceJSON);
+            writeJSON(resp, resultJSON);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -103,6 +108,18 @@ public class MobcliServlet extends HttpServlet {
 
     private void executeCommand(AsyncContext asyncContext){
 
+    }
+
+    private void writeJSON(ServletResponse resp, JSONObject json) throws IOException{
+        try {
+            resp.setContentType("application/json");
+            json.writeJSONString(resp.getWriter());
+            resp.flushBuffer();
+            resp.getWriter().close();
+        }
+        finally {
+            resp.getWriter().close();
+        }
     }
 
 }

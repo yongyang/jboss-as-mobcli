@@ -17,7 +17,7 @@ import java.util.Map;
  * @author <a href="mailto:yyang@redhat.com">Yong Yang</a>
  * @create 5/23/13 3:11 PM
  */
-public class NodeObject implements JSONAware {
+public class ResourceObject {
 
     private String name;
     private String value;
@@ -35,7 +35,7 @@ public class NodeObject implements JSONAware {
     private Map<String, String> genericOperations = new HashMap<String, String>();
 
 
-    public NodeObject(ModelNode readResourceModelNode, ModelNode readResourceDescriptionModelNode, ModelNode readChildrenTypeModelNode) {
+    public ResourceObject(ModelNode readResourceModelNode, ModelNode readResourceDescriptionModelNode, ModelNode readChildrenTypeModelNode) {
         
         this.readResourceModelNode = readResourceModelNode;
         this.readResourceDescriptionModelNode = readResourceDescriptionModelNode;
@@ -107,13 +107,22 @@ public class NodeObject implements JSONAware {
     }
 
 
-    public String toJSONString() {
+    public JSONObject toJSONObject() {
         //TODO: convert to json
         JSONObject json = new JSONObject();
         json.put("address", "/");
         json.put("name", "root");
-        json.put("ispath", true);
-        return json.toString();
+        json.put("leaf", false);
+
+        JSONArray children = new JSONArray();
+        JSONObject childJSON = new JSONObject();
+        childJSON.put("address", "/abc");
+        childJSON.put("name", "abc");
+        childJSON.put("leaf", true);
+        children.add(childJSON);
+
+        json.put("children", children);
+        return json;
     }
 }
 
