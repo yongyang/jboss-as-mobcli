@@ -95,38 +95,31 @@ public class AddressObject {
 
         ModelNode result = readResourceModelNode.get("result");
         ModelNode resourceDesc = readResourceDescriptionModelNode.get("result");
-        
+
+        JSONArray children = new JSONArray();
         List<String> childrenTypes = getChildrenTypes();
-        
-        List<JSONObject> attributes = new ArrayList<JSONObject>();
-        List<JSONObject> pathes = new ArrayList<JSONObject>();
-        
-        for (ModelNode node : result.asList()) {           
+        for (ModelNode node : result.asList()) {
             Property prop = node.asProperty();
             if (childrenTypes.contains(prop.getName())) { // resource node
-                if (hasGenericOperations(prop.getName())) {
-                    PathNodeObject pathNodeObject = new PathNodeObject(this.getAddress(), prop.getName(), "*", true);
-                    pathes.add(pathNodeObject.toJSONObject());
+                if (hasGenericOperations(prop.getName())) { // generic path
+//                    PathNodeObject pathNodeObject = new PathNodeObject(this.getAddress(), prop.getName(), "*");
+//                    children.add(pathNodeObject.toJSONObject());
+                    AttributeNodeObject attributeNodeObject = new AttributeNodeObject(this.getAddress(), prop.getName(), "*");
+                    children.add(attributeNodeObject.toJSONObject());
                 }
                 if (prop.getValue().isDefined()) { // path, as subsystem=jmx
                     for (ModelNode innerNode : prop.getValue().asList()) {
-                        PathNodeObject pathNodeObject = new PathNodeObject(this.getAddress(), prop.getName(), innerNode.asProperty().getName(), false);
-                        pathes.add(pathNodeObject.toJSONObject());
+                        PathNodeObject pathNodeObject = new PathNodeObject(this.getAddress(), prop.getName(), innerNode.asProperty().getName());
+                        children.add(pathNodeObject.toJSONObject());
                     }
                 }
             }
             else { // attribute node
                 AttributeNodeObject attributeNodeObject = new AttributeNodeObject(this.getAddress(), prop.getName(), prop.getValue().asString(), new AttributeDescription(resourceDesc.get("attributes", prop.getName())));
-                attributes.add(attributeNodeObject.toJSONObject());
+                children.add(attributeNodeObject.toJSONObject());
             }           
         }
 
-        Collections.sort(attributes, NODE_COMPARATOR);
-        Collections.sort(pathes, NODE_COMPARATOR);
-
-        JSONArray children = new JSONArray();
-        children.addAll(attributes);
-        children.addAll(pathes);
         json.put("children", children);
         return json;
     }
@@ -178,27 +171,20 @@ abstract class NodeObject {
 
 class PathNodeObject extends NodeObject {
     
-    private boolean isGeneric = false;
-
-    public PathNodeObject(String baseAddress, String name, String value, boolean generic) {
+    public PathNodeObject(String baseAddress, String name, String value) {
         super(baseAddress, name, value, false, "=");
-        isGeneric = generic;
-    }
-
-    public boolean isGeneric() {
-        return this.isGeneric;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public JSONObject toJSONObject() {
-        JSONObject childJSON = new JSONObject();
-        childJSON.put("address", getBaseAddress() + "/" + getName() + getSeparator() + getValue());
-        childJSON.put("name", getName());
-        childJSON.put("value", getValue());
-        childJSON.put("displayname", getName() + getSeparator() + getValue());
-        childJSON.put("leaf", isLeaf());
-        return childJSON;
+        JSONObject json = new JSONObject();
+        json.put("address", getBaseAddress() + "/" + getName() + getSeparator() + getValue());
+        json.put("name", getName());
+        json.put("value", getValue());
+        json.put("displayname", getName() + getSeparator() + getValue() + " /");
+        json.put("leaf", isLeaf());
+        return json;
     }
 }
 
@@ -211,6 +197,10 @@ class AttributeNodeObject extends NodeObject {
         this.attribDesc = attribDesc;
     }
 
+    AttributeNodeObject(String baseAddress, String name, String value) {
+        super(baseAddress, name, value, true, "=");
+    }
+
     public AttributeDescription getAttributeDescription() {
         return this.attribDesc;
     }
@@ -218,13 +208,13 @@ class AttributeNodeObject extends NodeObject {
     @Override
     @SuppressWarnings("unchecked")
     public JSONObject toJSONObject() {
-        JSONObject childJSON = new JSONObject();
-        childJSON.put("address", getBaseAddress() + "/" + getName() + getSeparator() + getValue());
-        childJSON.put("name", getName());
-        childJSON.put("value", getValue());
-        childJSON.put("displayname", getName() + getSeparator() + getValue());
-        childJSON.put("leaf", isLeaf());
-        return childJSON;
+        JSONObject json = new JSONObject();
+        json.put("address", getBaseAddress() + "/" + getName() + getSeparator() + getValue());
+        json.put("name", getName());
+        json.put("value", getValue());
+        json.put("displayname", getName() + getSeparator() + getValue());
+        json.put("leaf", isLeaf());
+        return json;
     }
 }
 
