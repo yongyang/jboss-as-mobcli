@@ -22,14 +22,20 @@ import java.util.Map;
  */
 public class AddressObject {
 
+    private static final Comparator<JSONObject> NODE_COMPARATOR = new Comparator<JSONObject>() {
+        public int compare(JSONObject o1, JSONObject o2) {
+            return ((String)o1.get("displayname")).compareTo((String)o2.get("displayname"));
+        }
+    };
+
     private String address;
 
     private ModelNode readResourceModelNode;
     private ModelNode readResourceDescriptionModelNode;
     private ModelNode readChildrenTypeModelNode;
 
-    //resourceName=>JSON of ModelNode
-    private Map<String, String> genericOperations = new HashMap<String, String>();
+    //resourceName=>ModelNode
+    private Map<String, ModelNode> genericOperations = new HashMap<String, ModelNode>();
 
 
     public AddressObject(String address, ModelNode readResourceModelNode, ModelNode readResourceDescriptionModelNode, ModelNode readChildrenTypeModelNode) {
@@ -57,32 +63,16 @@ public class AddressObject {
     }
 
     public void addGenericOperationResult(String resource, ModelNode resultJSON){
-        //TODO: 
-//        genericOperations.put(resource, resultJSON);
+        genericOperations.put(resource, resultJSON);
     }
 
-    public boolean hasGenericOperations(String resourceName) {
-/*
-        String readOperationNamesResponse = genericOperations.get(resourceName);
-        if(readOperationNamesResponse == null) {
-            return false;
-        }
-        else {
-            JSONValue value = JSONParser.parseLenient(readOperationNamesResponse);
-            JSONObject jsonObj = value.isObject();
-            if (jsonObj.get("outcome").isString().stringValue().equals("failed")) {
-                return false;
-            }
+    private boolean hasGenericOperations(String resourceName) {
+        ModelNode response = genericOperations.get(resourceName);
+        if (response.get("outcome").asString().equals("failed")) return false;
 
-            JSONArray array = jsonObj.get("result").isArray();
-            for(int i=0; i<array.size(); i++) {
-                if(array.get(i).isString().stringValue().equals("add")) {
-                    return true;
-                }
-            }
-            return false;
+        for (ModelNode node : response.get("result").asList()) {
+            if (node.asString().equals("add")) return true;
         }
-*/
         return false;
     }
 
@@ -114,11 +104,10 @@ public class AddressObject {
         for (ModelNode node : result.asList()) {           
             Property prop = node.asProperty();
             if (childrenTypes.contains(prop.getName())) { // resource node
-/*
-                if (hasGenericOperations(addressPath, prop.getName())) {
-                    add(new ManagementModelNode(cliGuiCtx, new UserObject(node, prop.getName())));
+                if (hasGenericOperations(prop.getName())) {
+                    PathNodeObject pathNodeObject = new PathNodeObject(this.getAddress(), prop.getName(), "*", true);
+                    pathes.add(pathNodeObject.toJSONObject());
                 }
-*/
                 if (prop.getValue().isDefined()) { // path, as subsystem=jmx
                     for (ModelNode innerNode : prop.getValue().asList()) {
                         PathNodeObject pathNodeObject = new PathNodeObject(this.getAddress(), prop.getName(), innerNode.asProperty().getName(), false);
@@ -132,17 +121,8 @@ public class AddressObject {
             }           
         }
 
-        Collections.sort(attributes, new Comparator<JSONObject>() {
-            public int compare(JSONObject o1, JSONObject o2) {
-                return ((String)o1.get("name")).compareTo((String)o2.get("name"));
-            }
-        });
-
-        Collections.sort(pathes, new Comparator<JSONObject>() {
-            public int compare(JSONObject o1, JSONObject o2) {
-                return ((String)o1.get("name")).compareTo((String)o2.get("name"));
-            }
-        });
+        Collections.sort(attributes, NODE_COMPARATOR);
+        Collections.sort(pathes, NODE_COMPARATOR);
 
         JSONArray children = new JSONArray();
         children.addAll(attributes);

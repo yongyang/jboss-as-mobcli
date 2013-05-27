@@ -49,9 +49,11 @@ Ext.define('Mobcli.NodeList', {
         config: {
             address: null, // default address /, should be set for different address
             title: null,
+/*
             grouper: function(record) {
                 return record.get('ispath') ? "Property" : "Path";
             },
+*/
             masked: {
                 xtype: 'loadmask',
                 message: 'loading...'
@@ -77,7 +79,7 @@ Ext.define('Mobcli.NodeList', {
 
         initialize: function() {
             this.callParent();
-            this.setTitle('Path:' + this.getAddress());
+            this.setTitle('PATH:' + this.getAddress());
             var store = Ext.create("Mobcli.input.NodeLoaderStore",{address: this.getAddress()});
             store.getProxy().setUrl(store.getProxy().getUrl() + "?" + Ext.Object.toQueryString({'addr': this.getAddress()}));
             store.getProxy().setExtraParams('addr', this.getAddress());
