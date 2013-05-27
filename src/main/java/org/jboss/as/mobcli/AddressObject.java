@@ -23,14 +23,6 @@ import java.util.Map;
 public class AddressObject {
 
     private String address;
-    private String name;
-    private String value;
-    private boolean isLeaf;
-    private boolean isGeneric = false;
-    private String separator;
-
-    private AttributeDescription attribDesc = null;
-
 
     private ModelNode readResourceModelNode;
     private ModelNode readResourceDescriptionModelNode;
@@ -45,18 +37,7 @@ public class AddressObject {
         this.readResourceModelNode = readResourceModelNode;
         this.readResourceDescriptionModelNode = readResourceDescriptionModelNode;
         this.readChildrenTypeModelNode = readChildrenTypeModelNode;
-        
-        this.attribDesc = new AttributeDescription(readResourceDescriptionModelNode.get("attributes", name));
-        
-        this.name = name;
-        this.value = value;
-        this.isLeaf = true;
-
-        if (this.attribDesc.isGraphable()) {
-            this.separator = " \u2245 ";
-        } else {
-            this.separator = " => ";
-        }
+                
     }
 
     public String getAddress() {
@@ -108,13 +89,13 @@ public class AddressObject {
     public List<String> getChildrenTypes() {
         List<ModelNode> childrenTypesModelNodes = readChildrenTypeModelNode.get("result").asList();
         List<String> childrenTypes = new ArrayList<String>(childrenTypesModelNodes.size());
-        for(int i=0; i<childrenTypesModelNodes.size(); i++){
-            childrenTypes.add(childrenTypesModelNodes.get(i).asString());
+        for(ModelNode node: childrenTypesModelNodes){
+            childrenTypes.add(node.asString());
         }
         return childrenTypes;
     }
 
-
+    @SuppressWarnings("unchecked")
     public JSONObject toJSONObject() {
         //TODO: convert to json
         JSONObject json = new JSONObject();
@@ -146,7 +127,7 @@ public class AddressObject {
                 }
             }
             else { // attribute node
-                AttributeNodeObject attributeNodeObject = new AttributeNodeObject(this.getAddress(), prop.getName(), prop.getValue().asString(), new AttributeDescription(resourceDesc));
+                AttributeNodeObject attributeNodeObject = new AttributeNodeObject(this.getAddress(), prop.getName(), prop.getValue().asString(), new AttributeDescription(resourceDesc.get("attributes", prop.getName())));
                 attributes.add(attributeNodeObject.toJSONObject());
             }           
         }
@@ -229,10 +210,13 @@ class PathNodeObject extends NodeObject {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public JSONObject toJSONObject() {
         JSONObject childJSON = new JSONObject();
         childJSON.put("address", getBaseAddress() + "/" + getName() + getSeparator() + getValue());
-        childJSON.put("name", getName() + getSeparator() + getValue());
+        childJSON.put("name", getName());
+        childJSON.put("value", getValue());
+        childJSON.put("displayname", getName() + getSeparator() + getValue());
         childJSON.put("leaf", isLeaf());
         return childJSON;
     }
@@ -252,10 +236,13 @@ class AttributeNodeObject extends NodeObject {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public JSONObject toJSONObject() {
         JSONObject childJSON = new JSONObject();
         childJSON.put("address", getBaseAddress() + "/" + getName() + getSeparator() + getValue());
-        childJSON.put("name", getName() + getSeparator() + getValue());
+        childJSON.put("name", getName());
+        childJSON.put("value", getValue());
+        childJSON.put("displayname", getName() + getSeparator() + getValue());
         childJSON.put("leaf", isLeaf());
         return childJSON;
     }
@@ -280,8 +267,7 @@ class AttributeDescription {
     }
 
     public boolean isGraphable() {
-        return false;
-//        return isRuntime() && isNumeric();
+        return isRuntime() && isNumeric();
     }
 
     public boolean isNumeric() {

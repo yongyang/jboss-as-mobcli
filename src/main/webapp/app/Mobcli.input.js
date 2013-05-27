@@ -6,6 +6,8 @@ Ext.define('Mobcli.input.NodeModel', {
         fields: [
             {name: 'address', type: 'string'}, // full address
             {name: 'name', type: 'string'}, // name
+            {name: 'value', type: 'string'}, // value
+            {name: 'displayname', type: 'string'}, // display name
             {name: 'leaf', type: 'boolean'} // is path or property, path is not leaf
         ]
     }
@@ -15,9 +17,9 @@ Ext.define("Mobcli.input.NodeLoaderStore", {
     extend: 'Ext.data.Store',
     config: {
         model: 'Mobcli.input.NodeModel',
+        autoLoad: false,
         address: "/",
 //        sorters: 'name',
-        autoLoad: false,
 /*
         grouper: function(record) {
             return record.get('leaf') ? "Property" : "Path";
@@ -54,7 +56,7 @@ Ext.define('Mobcli.NodeList', {
                 xtype: 'loadmask',
                 message: 'loading...'
             },
-            itemTpl: '<div>{name}</div>',
+            itemTpl: '<div>{displayname}</div>',
             onItemDisclosure: true,
             listeners: {
                 scope: this,
