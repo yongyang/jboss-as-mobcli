@@ -15,14 +15,15 @@ Ext.define("Mobcli.input.NodeLoaderStore", {
     extend: 'Ext.data.Store',
     config: {
         model: 'Mobcli.input.NodeModel',
+        address: "/",
         sorters: 'name',
-        autoLoad: 'true',
+        autoLoad: false,
         grouper: function(record) {
             return record.get('leaf') ? "Property" : "Path";
         },
         proxy: {
-            url: 'cliservlet/resource',
             type: 'ajax',
+            url: 'cliservlet/resource',
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             reader: {
                 type: 'json',
@@ -30,12 +31,11 @@ Ext.define("Mobcli.input.NodeLoaderStore", {
             },
 
             listeners : {
-            			exception : function(proxy, response, operation) {
-                               console.log(response);
-            			}
-            		}
+                exception : function(proxy, response, operation) {
+                    console.log(response);
+                }
+            }
         }
-
     }
 });
 
@@ -43,7 +43,7 @@ Ext.define('Mobcli.NodeList', {
         extend: 'Ext.List',
         xtype: 'moblci_nodelist',
         config: {
-            store:  Ext.create("Mobcli.input.NodeLoaderStore"),
+            address: '/', // default address /, should be set for different address
             grouper: function(record) {
                 return record.get('ispath') ? "Property" : "Path";
             },
@@ -68,11 +68,18 @@ Ext.define('Mobcli.NodeList', {
                 }
             }
         },
-        
+
         constructor: function(config) {
             config = config?  config : {};
             this.callParent(config);
-            this.initConfig(config)
+            this.initConfig(config);
+            var store = Ext.create("Mobcli.input.NodeLoaderStore",{address: this.getAddress()});
+            store.getProxy().setUrl(store.getProxy().getUrl() + "?addr=" + Ext.Object.toQueryString(this.getAddress()));
+            store.getProxy().setExtraParams('addr', this.getAddress());
+            this.setStore(store);
+            console.log(store.getProxy());
+            store.load();
+            return this;
         }
     }
 );
