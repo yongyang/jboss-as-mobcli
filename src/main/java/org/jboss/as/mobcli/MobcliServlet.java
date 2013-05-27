@@ -6,6 +6,7 @@ import javax.servlet.AsyncContext;
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -94,8 +95,10 @@ public class MobcliServlet extends HttpServlet {
     private void listResource(AsyncContext asyncContext) {
         asyncContext.getRequest();
         ServletResponse resp = asyncContext.getResponse();
+        ServletRequest req = asyncContext.getRequest();
         try {
-            JSONObject resourceJSON = proxy.readResourceNode("127.0.0.1", 9999, "/").toJSONObject();
+            String address = req.getParameter("addr");
+            JSONObject resourceJSON = proxy.readResourceNode("127.0.0.1", 9999, address).toJSONObject();
             JSONObject resultJSON = new JSONObject();
             resultJSON.put("success", true);
             resultJSON.put("data", resourceJSON);

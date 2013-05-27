@@ -16,11 +16,13 @@ Ext.define("Mobcli.input.NodeLoaderStore", {
     config: {
         model: 'Mobcli.input.NodeModel',
         address: "/",
-        sorters: 'name',
+//        sorters: 'name',
         autoLoad: false,
+/*
         grouper: function(record) {
             return record.get('leaf') ? "Property" : "Path";
         },
+*/
         proxy: {
             type: 'ajax',
             url: 'cliservlet/resource',
@@ -43,7 +45,8 @@ Ext.define('Mobcli.NodeList', {
         extend: 'Ext.List',
         xtype: 'moblci_nodelist',
         config: {
-            address: '/', // default address /, should be set for different address
+            address: null, // default address /, should be set for different address
+            title: null,
             grouper: function(record) {
                 return record.get('ispath') ? "Property" : "Path";
             },
@@ -69,17 +72,15 @@ Ext.define('Mobcli.NodeList', {
             }
         },
 
-        constructor: function(config) {
-            config = config?  config : {};
-            this.callParent(config);
-            this.initConfig(config);
+        initialize: function() {
+            this.callParent();
+            this.setTitle('Path:' + this.getAddress());
             var store = Ext.create("Mobcli.input.NodeLoaderStore",{address: this.getAddress()});
-            store.getProxy().setUrl(store.getProxy().getUrl() + "?addr=" + Ext.Object.toQueryString(this.getAddress()));
+            store.getProxy().setUrl(store.getProxy().getUrl() + "?" + Ext.Object.toQueryString({'addr': this.getAddress()}));
             store.getProxy().setExtraParams('addr', this.getAddress());
             this.setStore(store);
-            console.log(store.getProxy());
-            store.load();
-            return this;
+            console.log("initialize:" + this.getAddress());
+            store.load();            
         }
     }
 );

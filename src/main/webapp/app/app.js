@@ -12,8 +12,7 @@ Ext.application({
             iconCls: 'search',
             items:[
                 Ext.create('Mobcli.NodeList', {
-                    title: "Path://",
-                    address: '/abcd'
+                    address: '/'
                 })
             ]
         });
