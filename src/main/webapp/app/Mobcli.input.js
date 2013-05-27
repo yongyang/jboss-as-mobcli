@@ -65,6 +65,7 @@ Ext.define('Mobcli.NodeList', {
                 },
                 disclose: function(el, record, target, index, e, eOpts ) {
                     e.stopEvent();
+                    //TODO: create command list view
                     Ext.getCmp('inputNavigationView').push({
                         title: 'Commands',
                         html: 'Command List'
