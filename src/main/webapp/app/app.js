@@ -11,7 +11,7 @@ Ext.application({
             cls: 'card dark',
             iconCls: 'search',
             items:[
-                Ext.create('Mobcli.NodeList', {
+                Ext.create('Mobcli.input.NodeListView', {
                     address: '/'
                 })
             ]

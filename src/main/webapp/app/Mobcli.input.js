@@ -13,12 +13,11 @@ Ext.define('Mobcli.input.NodeModel', {
     }
 });
 
-Ext.define("Mobcli.input.NodeLoaderStore", {
+Ext.define("Mobcli.input.NodeStore", {
     extend: 'Ext.data.Store',
     config: {
         model: 'Mobcli.input.NodeModel',
         autoLoad: false,
-        address: "/",
 //        sorters: 'name',
 /*
         grouper: function(record) {
@@ -43,9 +42,8 @@ Ext.define("Mobcli.input.NodeLoaderStore", {
     }
 });
 
-Ext.define('Mobcli.NodeList', {
+Ext.define('Mobcli.input.NodeListView', {
         extend: 'Ext.List',
-        xtype: 'moblci_nodelist',
         config: {
             address: null, // default address /, should be set for different address
             title: null,
@@ -58,6 +56,7 @@ Ext.define('Mobcli.NodeList', {
                 xtype: 'loadmask',
                 message: 'loading...'
             },
+            store: Ext.create("Mobcli.input.NodeStore"),
             itemTpl: '<div>{displayname}</div>',
             onItemDisclosure: true,
             listeners: {
@@ -68,10 +67,9 @@ Ext.define('Mobcli.NodeList', {
                 disclose: function(el, record, target, index, e, eOpts ) {
                     e.stopEvent();
                     //TODO: create command list view
-                    Ext.getCmp('inputNavigationView').push({
-                        title: 'Commands',
-                        html: 'Command List'
-                    });
+                    var operationList = Ext.create('Mobcli.input.OperationListView');
+
+                    Ext.getCmp('inputNavigationView').push(operationList);
                     return false;
                 }
             }
@@ -80,12 +78,43 @@ Ext.define('Mobcli.NodeList', {
         initialize: function() {
             this.callParent();
             this.setTitle('PATH:' + this.getAddress());
-            var store = Ext.create("Mobcli.input.NodeLoaderStore",{address: this.getAddress()});
-            store.getProxy().setUrl(store.getProxy().getUrl() + "?" + Ext.Object.toQueryString({'addr': this.getAddress()}));
-            store.getProxy().setExtraParams('addr', this.getAddress());
-            this.setStore(store);
-            console.log("initialize:" + this.getAddress());
-            store.load();            
+            this.getStore().load({params: {addr: this.getAddress()}});
         }
     }
 );
+
+
+// Command List view
+Ext.define('Mobcli.input.OperationModel', {
+    extend: 'Ext.data.Model',
+    config: {
+        fields: [
+            {name: 'name', type: 'string'}, // name
+            {name: 'description', type: 'string'}, // description
+            {name: 'params', type: 'string'} // prams
+        ]
+    }
+
+});
+
+Ext.define('Mobcli.input.OperationStore', {
+    extend: 'Ext.data.Store',
+    config: {
+        model: 'Mobcli.input.OperationModel',
+        autoLoad: false
+    }
+});
+
+
+Ext.define('Mobcli.input.OperationListView', {
+    extend: 'Ext.List',
+    config: {
+        title: 'Operations',
+        store: Ext.create('Mobcli.input.OperationStore'),
+        itemTpl: '<div>{name}</div>'
+    },
+    initialize: function() {
+        this.callParent();
+//        this.getStore().load({params: {addr: this.getAddress()}});
+    }
+});

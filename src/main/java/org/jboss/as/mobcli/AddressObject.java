@@ -87,7 +87,7 @@ public class AddressObject {
 
     @SuppressWarnings("unchecked")
     public JSONObject toJSONObject() {
-        //TODO: convert to json
+        // convert to json
         JSONObject json = new JSONObject();
         json.put("address", getAddress());
         json.put("name", "root");
