@@ -20,8 +20,10 @@ import java.util.Map;
  * @author <a href="mailto:yyang@redhat.com">Yong Yang</a>
  * @create 5/23/13 3:11 PM
  */
-public class AddressObject {
+public class ResourceParser {
 
+    private String ip;
+    private int port;
     private String address;
 
     private ModelNode readResourceModelNode;
@@ -31,13 +33,47 @@ public class AddressObject {
     //resourceName=>ModelNode
     private Map<String, ModelNode> genericOperations = new HashMap<String, ModelNode>();
 
+    private ModelControllerProxy proxy = ModelControllerProxy.getInstance();
 
-    public AddressObject(String address, ModelNode readResourceModelNode, ModelNode readResourceDescriptionModelNode, ModelNode readChildrenTypeModelNode) {
+    private ResourceParser(String ip, int port, String address) {
+        this.ip = ip;
+        this.port = port;
         this.address = address;
-        this.readResourceModelNode = readResourceModelNode;
-        this.readResourceDescriptionModelNode = readResourceDescriptionModelNode;
-        this.readChildrenTypeModelNode = readChildrenTypeModelNode;
-                
+        load();
+    }
+
+    public static ResourceParser newResourceParser(String ip, int port, String address) {
+        return new ResourceParser(ip, port, address);
+    }
+
+    private void load() {
+        // wrapper method for read-resource
+        String[] commands = new String[]{
+                address + ":read-resource(include-runtime=true,include-defaults=true)",
+                address + ":read-resource-description(recursive-depth=1)", //red children's description one time, so the children's tooltip can be displayed after loading
+                address + ":read-children-types"
+        };
+
+        try {
+            ModelNode[] result = proxy.executeBatchModelNode(ip, port, commands);
+
+            this.readResourceModelNode = result[0];
+            this.readResourceDescriptionModelNode = result[1];
+            this.readChildrenTypeModelNode = result[2];
+
+            ModelNode resourceResponse = result[0].get("result"); //result modelnode
+            if (resourceResponse.isDefined()) {
+                for (ModelNode node : resourceResponse.asList()) {
+                    Property prop = node.asProperty();
+                    String resource = prop.getName();
+                    ModelNode readOperationNamesModelNode = proxy.executeModelNode(ip, port, address + resource + "=*/:read-operation-names");
+                    this.addGenericOperationResult(resource, readOperationNamesModelNode);
+                }
+            }
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Failed to collect resources info.", e);
+        }
     }
 
     public String getAddress() {
@@ -56,7 +92,7 @@ public class AddressObject {
         return readChildrenTypeModelNode;
     }
 
-    public void addGenericOperationResult(String resource, ModelNode resultJSON){
+    public void addGenericOperationResult(String resource, ModelNode resultJSON) {
         genericOperations.put(resource, resultJSON);
     }
 
@@ -70,10 +106,10 @@ public class AddressObject {
         return false;
     }
 
-    public List<String> getChildrenTypes() {
+    private List<String> getChildrenTypes() {
         List<ModelNode> childrenTypesModelNodes = readChildrenTypeModelNode.get("result").asList();
         List<String> childrenTypes = new ArrayList<String>(childrenTypesModelNodes.size());
-        for(ModelNode node: childrenTypesModelNodes){
+        for (ModelNode node : childrenTypesModelNodes) {
             childrenTypes.add(node.asString());
         }
         return childrenTypes;
@@ -84,8 +120,6 @@ public class AddressObject {
         // convert to json
         JSONObject json = new JSONObject();
         json.put("address", getAddress());
-        json.put("name", "root");
-        json.put("leaf", false);
 
         ModelNode result = readResourceModelNode.get("result");
         ModelNode resourceDesc = readResourceDescriptionModelNode.get("result");
@@ -98,8 +132,8 @@ public class AddressObject {
                 if (hasGenericOperations(prop.getName())) { // generic path
 //                    PathNodeObject pathNodeObject = new PathNodeObject(this.getAddress(), prop.getName(), "*");
 //                    children.add(pathNodeObject.toJSONObject());
-                    AttributeNodeObject attributeNodeObject = new AttributeNodeObject(this.getAddress(), prop.getName(), "*");
-                    children.add(attributeNodeObject.toJSONObject());
+                    PathNodeObject pathNodeObject = new PathNodeObject(this.getAddress(), prop.getName(), "*");
+                    children.add(pathNodeObject.toJSONObject());
                 }
                 if (prop.getValue().isDefined()) { // path, as subsystem=jmx
                     for (ModelNode innerNode : prop.getValue().asList()) {
@@ -111,7 +145,7 @@ public class AddressObject {
             else { // attribute node
                 AttributeNodeObject attributeNodeObject = new AttributeNodeObject(this.getAddress(), prop.getName(), prop.getValue().asString(), new AttributeDescription(resourceDesc.get("attributes", prop.getName())));
                 children.add(attributeNodeObject.toJSONObject());
-            }           
+            }
         }
 
         json.put("children", children);
@@ -164,9 +198,18 @@ abstract class NodeObject {
 }
 
 class PathNodeObject extends NodeObject {
-    
+
+    private boolean isGeneric = false;
+
     public PathNodeObject(String baseAddress, String name, String value) {
         super(baseAddress, name, value, false, "=");
+        if (value.equals("*")) {
+            isGeneric = true;
+        }
+    }
+
+    boolean isGeneric() {
+        return isGeneric;
     }
 
     @Override
@@ -176,14 +219,15 @@ class PathNodeObject extends NodeObject {
         json.put("address", getBaseAddress() + getName() + getSeparator() + getValue() + "/");
         json.put("name", getName());
         json.put("value", getValue());
-        json.put("displayname", getName() + getSeparator() + getValue() + " /");
+        json.put("displayname", getName() + getSeparator() + getValue() + (isGeneric() ? "" : " /"));
         json.put("leaf", isLeaf());
+        json.put("generic", isGeneric());
         return json;
     }
 }
 
 class AttributeNodeObject extends NodeObject {
-    
+
     private AttributeDescription attribDesc = null;
 
     AttributeNodeObject(String baseAddress, String name, String value, AttributeDescription attribDesc) {

@@ -108,11 +108,8 @@ public class MobcliServlet extends HttpServlet {
         ServletRequest req = asyncContext.getRequest();
         try {
             String address = req.getParameter("addr");
-            JSONObject resourceJSON = proxy.readResourceNode("127.0.0.1", 9999, address).toJSONObject();
-            JSONObject resultJSON = new JSONObject();
-            resultJSON.put("success", true);
-            resultJSON.put("data", resourceJSON);
-            writeJSON(resp, resultJSON);
+            JSONObject resourceJSON = ResourceParser.newResourceParser("127.0.0.1", 9999, address).toJSONObject();
+            writeResponseJSON(resp, resourceJSON);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -124,24 +121,9 @@ public class MobcliServlet extends HttpServlet {
         ServletRequest req = asyncContext.getRequest();
         try {
             String nodeString = req.getParameter("node");
+            //TODO: don't transfer node
             JSONObject nodeJSON = (JSONObject)JSONValue.parse(nodeString);
-            ModelNode opNames = proxy.executeModelNode("127.0.0.1", 9999, nodeJSON.get("address") + ":read-operation-names");
-            if (opNames.get("outcome").asString().equals("failed")) return;
-
-/*
-            for (ModelNode name : opNames.get("result").asList()) {
-                String strName = name.asString();
-
-                // filter operations
-                if (node.isGeneric() && !genericOpList.contains(strName)) continue;
-                if (node.isLeaf() && !leafOpList.contains(strName)) continue;
-                if (!node.isGeneric() && !node.isLeaf() && strName.equals("add")) continue;
-
-                ModelNode opDescription = getResourceDescription(addressPath, strName);
-                add(new OperationAction(node, strName, opDescription));
-            }
-*/
-
+            OperationParser.newOperationParser("127.0.0.1", 9999, "address").toJSONObject();
             JSONObject operationJSON = new JSONObject();
 
             JSONArray names = new JSONArray();
@@ -152,11 +134,7 @@ public class MobcliServlet extends HttpServlet {
             }
             
             operationJSON.put("children",names);
-            
-            JSONObject resultJSON = new JSONObject();
-            resultJSON.put("success", true);
-            resultJSON.put("data", operationJSON);
-            writeJSON(resp, resultJSON);
+            writeResponseJSON(resp, operationJSON);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -177,10 +155,14 @@ public class MobcliServlet extends HttpServlet {
 
     }
 
-    private void writeJSON(ServletResponse resp, JSONObject json) throws IOException{
+    private void writeResponseJSON(ServletResponse resp, JSONObject resultJSON) throws IOException{
         try {
             resp.setContentType("application/json");
-            json.writeJSONString(resp.getWriter());
+            JSONObject responseJSON = new JSONObject();
+            responseJSON.put("success", true);
+            responseJSON.put("data", resultJSON);
+
+            responseJSON.writeJSONString(resp.getWriter());
             resp.flushBuffer();
             resp.getWriter().close();
         }
@@ -188,11 +170,5 @@ public class MobcliServlet extends HttpServlet {
             resp.getWriter().close();
         }
     }
-
-
-    private static final String[] genericOps = {"add", "read-operation-description", "read-resource-description", "read-operation-names"};
-    private static final List<String> genericOpList = Arrays.asList(genericOps);
-    private static final String[] leafOps = {"write-attribute", "undefine-attribute"};
-    private static final List<String> leafOpList = Arrays.asList(leafOps);
 
 }
