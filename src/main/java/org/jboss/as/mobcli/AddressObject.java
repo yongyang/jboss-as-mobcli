@@ -179,7 +179,7 @@ class PathNodeObject extends NodeObject {
     @SuppressWarnings("unchecked")
     public JSONObject toJSONObject() {
         JSONObject json = new JSONObject();
-        json.put("address", getBaseAddress() + "/" + getName() + getSeparator() + getValue());
+        json.put("address", getBaseAddress() + getName() + getSeparator() + getValue() + "/");
         json.put("name", getName());
         json.put("value", getValue());
         json.put("displayname", getName() + getSeparator() + getValue() + " /");
@@ -209,7 +209,7 @@ class AttributeNodeObject extends NodeObject {
     @SuppressWarnings("unchecked")
     public JSONObject toJSONObject() {
         JSONObject json = new JSONObject();
-        json.put("address", getBaseAddress() + "/" + getName() + getSeparator() + getValue());
+        json.put("address", getBaseAddress() + getName() + getSeparator() + getValue() + "/");
         json.put("name", getName());
         json.put("value", getValue());
         json.put("displayname", getName() + getSeparator() + getValue());
