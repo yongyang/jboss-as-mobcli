@@ -27,7 +27,7 @@ Ext.define("Mobcli.input.NodeStore", {
 */
         proxy: {
             type: 'ajax',
-            url: 'cliservlet/resource',
+            url: 'cliservlet/resources',
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             reader: {
                 type: 'json',
@@ -36,7 +36,7 @@ Ext.define("Mobcli.input.NodeStore", {
 
             listeners : {
                 exception : function(proxy, response, operation) {
-                    console.log(response);
+                    Ext.Msg.alert('ERROR', 'Exception caught');
                 }
             }
         }
@@ -56,12 +56,13 @@ Ext.define('Mobcli.input.NodeListView', {
             singleton: false,
             itemTpl: '<div>{displayname}</div>',
             onItemDisclosure: true,
+            emptyText: 'No items',
             listeners: {
                 scope: this,
                 itemtap: function(list, index, target, record, e, eOpts) {
                     var leaf = record.getData().leaf;
                     if(leaf) {
-                        Ext.Msg.alert("Tap", "This is a property, couldn't expand.");
+                        Ext.Msg.alert("Alert", "Couldn't expand a property.");
                     }
                     else {
                         var address = record.getData().address;
@@ -71,10 +72,7 @@ Ext.define('Mobcli.input.NodeListView', {
                 },
                 disclose: function(list, record, target, index, e, eOpts ) {
                     e.stopEvent();
-                    //TODO: create command list view
-                    var operationList = Ext.create('Mobcli.input.OperationListView');
-
-                    Ext.getCmp('inputNavigationView').push(operationList);
+                    Ext.getCmp('inputNavigationView').pushOperationListView(record.getData());
                     return false;
                 }
             }
@@ -105,7 +103,23 @@ Ext.define('Mobcli.input.OperationStore', {
     extend: 'Ext.data.Store',
     config: {
         model: 'Mobcli.input.OperationModel',
-        autoLoad: false
+        autoLoad: false,
+        proxy: {
+            type: 'ajax',
+            url: 'cliservlet/operations',
+            headers: { 'Content-Type': 'application/json;charset=utf-8' },
+            reader: {
+                type: 'json',
+                rootProperty: 'data.children'
+            },
+
+            listeners : {
+                exception : function(proxy, response, operation) {
+                    Ext.Msg.alert('ERROR', 'Exception caught');
+                }
+            }
+            
+        }
     }
 });
 
@@ -115,7 +129,6 @@ Ext.define('Mobcli.input.OperationListView', {
     config: {
         title: 'Operations',
         singleton: true,
-        store: Ext.create('Mobcli.input.OperationStore'),
         itemTpl: '<div>{name}</div>'
     },
     initialize: function() {
@@ -140,6 +153,21 @@ Ext.define("Ext.input.NavigationView", {
         });
         this.push(newList);
         store.load({params: {addr: newList.getAddress()}});
+    },
+    pushOperationListView : function(node) {
+        var operationListView = Ext.create('Mobcli.input.OperationListView');
+        var store = operationListView.getStore();
+        if(store != null) {
+            store.setData({});
+        }
+        else {
+            store = Ext.create('Mobcli.input.OperationStore');
+            operationListView.setStore(store);
+        }
+        this.push(operationListView);
+//        console.log(node);
+        //TODO: don't use node, specify generic, leaf
+        store.load({params: {node: Ext.JSON.encode(node)}});        
     }
 });
 

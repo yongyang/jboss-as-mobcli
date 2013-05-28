@@ -8,6 +8,7 @@ import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.json.simple.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -98,7 +99,7 @@ public class ModelControllerProxy {
         return executeModelNode(ip, port, command).toJSONString(false);
     }
 
-    private ModelNode executeModelNode(String ip, int port, String command) throws Exception {
+    public ModelNode executeModelNode(String ip, int port, String command) throws Exception {
         String key = ip + ":" +port;
         if(!cmdCtxMap.containsKey(key)) {
             initASInstanceContext(ip, port, "", "");

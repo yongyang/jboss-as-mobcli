@@ -1,6 +1,10 @@
 package org.jboss.as.mobcli;
 
+import org.jboss.dmr.ModelNode;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.AsyncEvent;
@@ -13,8 +17,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -73,10 +77,17 @@ public class MobcliServlet extends HttpServlet {
             pathInfo=pathInfo.substring(0, pathInfo.length()-1);
         }
         
-        if(pathInfo.equals("resource")) { // list all resources of an address path
+        if(pathInfo.equals("resources")) { // list all resources of an address path
             executor.execute(new Runnable() {
                 public void run() {
                     listResource(asyncContext);
+                }
+            });
+        }
+        else if(pathInfo.equals("operations")) { // list operations of an resouce node
+            executor.execute(new Runnable() {
+                public void run() {
+                    listOperation(asyncContext);
                 }
             });
         }
@@ -93,7 +104,6 @@ public class MobcliServlet extends HttpServlet {
     }
 
     private void listResource(AsyncContext asyncContext) {
-        asyncContext.getRequest();
         ServletResponse resp = asyncContext.getResponse();
         ServletRequest req = asyncContext.getRequest();
         try {
@@ -108,6 +118,60 @@ public class MobcliServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
     }
+
+    private void listOperation(AsyncContext asyncContext) {
+        ServletResponse resp = asyncContext.getResponse();
+        ServletRequest req = asyncContext.getRequest();
+        try {
+            String nodeString = req.getParameter("node");
+            JSONObject nodeJSON = (JSONObject)JSONValue.parse(nodeString);
+            ModelNode opNames = proxy.executeModelNode("127.0.0.1", 9999, nodeJSON.get("address") + ":read-operation-names");
+            if (opNames.get("outcome").asString().equals("failed")) return;
+
+/*
+            for (ModelNode name : opNames.get("result").asList()) {
+                String strName = name.asString();
+
+                // filter operations
+                if (node.isGeneric() && !genericOpList.contains(strName)) continue;
+                if (node.isLeaf() && !leafOpList.contains(strName)) continue;
+                if (!node.isGeneric() && !node.isLeaf() && strName.equals("add")) continue;
+
+                ModelNode opDescription = getResourceDescription(addressPath, strName);
+                add(new OperationAction(node, strName, opDescription));
+            }
+*/
+
+            JSONObject operationJSON = new JSONObject();
+
+            JSONArray names = new JSONArray();
+            for(int i=0; i<5; i++){
+                JSONObject name = new JSONObject();
+                name.put("name", "add");
+                names.add(name);
+            }
+            
+            operationJSON.put("children",names);
+            
+            JSONObject resultJSON = new JSONObject();
+            resultJSON.put("success", true);
+            resultJSON.put("data", operationJSON);
+            writeJSON(resp, resultJSON);
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        
+    }
+
+    private ModelNode getResourceDescription(String addressPath, String name) {
+        try {
+            return proxy.executeModelNode("127.0.0.1", 9999, addressPath + ":read-operation-description(name=\"" + name + "\")");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 
     private void executeCommand(AsyncContext asyncContext){
 
@@ -124,5 +188,11 @@ public class MobcliServlet extends HttpServlet {
             resp.getWriter().close();
         }
     }
+
+
+    private static final String[] genericOps = {"add", "read-operation-description", "read-resource-description", "read-operation-names"};
+    private static final List<String> genericOpList = Arrays.asList(genericOps);
+    private static final String[] leafOps = {"write-attribute", "undefine-attribute"};
+    private static final List<String> leafOpList = Arrays.asList(leafOps);
 
 }

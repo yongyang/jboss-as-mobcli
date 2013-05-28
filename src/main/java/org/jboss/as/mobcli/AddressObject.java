@@ -22,12 +22,6 @@ import java.util.Map;
  */
 public class AddressObject {
 
-    private static final Comparator<JSONObject> NODE_COMPARATOR = new Comparator<JSONObject>() {
-        public int compare(JSONObject o1, JSONObject o2) {
-            return ((String)o1.get("displayname")).compareTo((String)o2.get("displayname"));
-        }
-    };
-
     private String address;
 
     private ModelNode readResourceModelNode;
