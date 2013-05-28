@@ -127,7 +127,7 @@ Ext.define('Mobcli.input.OperationStore', {
 Ext.define('Mobcli.input.OperationListView', {
     extend: 'Ext.List',
     config: {
-        title: 'Operations',
+        title: 'OP:',
         singleton: true,
         itemTpl: '<div>{name}</div>'
     },
@@ -156,6 +156,7 @@ Ext.define("Ext.input.NavigationView", {
     },
     pushOperationListView : function(node) {
         var operationListView = Ext.create('Mobcli.input.OperationListView');
+        operationListView.setTitle("OP:" + node.address);
         var store = operationListView.getStore();
         if(store != null) {
             store.setData({});
