@@ -54,7 +54,6 @@ Ext.define('Mobcli.input.NodeListView', {
             },
 */
             singleton: false,
-            store: Ext.create("Mobcli.input.NodeStore"),
             itemTpl: '<div>{displayname}</div>',
             onItemDisclosure: true,
             listeners: {
@@ -121,7 +120,6 @@ Ext.define('Mobcli.input.OperationListView', {
     },
     initialize: function() {
         this.callParent();
-//        this.getStore().load({params: {addr: this.getAddress()}});
     }
 });
 
@@ -135,9 +133,13 @@ Ext.define("Ext.input.NavigationView", {
         items:[]
     },
     pushNewList: function(address) {
-        var newList = Ext.create('Mobcli.input.NodeListView',{address: address});
+        var store = Ext.create("Mobcli.input.NodeStore"); 
+        var newList = Ext.create('Mobcli.input.NodeListView',{
+            address: address,
+            store: store
+        });
         this.push(newList);
-        newList.getStore().load({params: {addr: newList.getAddress()}});
+        store.load({params: {addr: newList.getAddress()}});
     }
 });
 
