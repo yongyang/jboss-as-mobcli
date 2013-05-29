@@ -218,10 +218,6 @@ class AttributeNodeObject extends NodeObject {
         this.attribDesc = attribDesc;
     }
 
-    AttributeNodeObject(String baseAddress, String name, String value) {
-        super(baseAddress, name, value, true, "=");
-    }
-
     public AttributeDescription getAttributeDescription() {
         return this.attribDesc;
     }
@@ -230,7 +226,7 @@ class AttributeNodeObject extends NodeObject {
     @SuppressWarnings("unchecked")
     public JSONObject toJSONObject() {
         JSONObject json = new JSONObject();
-        json.put("address", getBaseAddress() + getName() + getSeparator() + getValue() + "/");
+        json.put("address", getBaseAddress());
         json.put("name", getName());
         json.put("value", getValue());
         json.put("displayname", getName() + getSeparator() + getValue());

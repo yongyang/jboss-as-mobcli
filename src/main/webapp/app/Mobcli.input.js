@@ -139,14 +139,15 @@ Ext.define('Mobcli.input.OperationListView', {
     extend: 'Ext.List',
     config: {
         title: 'OP:',
+        address: null,
         ui: 'round',
         singleton: true,
-        itemTpl: '<div>{operation-name} - <small>{description}<small></div>',
+        itemTpl: '<div>{operation-name} <small>({description}<small>)</div>',
         emptyText: 'No operation',
         listeners: {
             itemtap: function(list, index, target, record, e, eOpts) {
                 var leaf = record.getData().leaf;
-                Ext.Msg.alert("Alert", "Couldn't expand a property.");
+                Ext.Msg.alert("List Address", list.getAddress());
                 console.log(record.getData());
             }
         }
@@ -176,8 +177,16 @@ Ext.define("Mobcli.input.NavigationView", {
         store.load({params: {node: Ext.JSON.encode(node)}});
     },
     pushOperationListView : function(node) {
-        var operationListView = Ext.create('Mobcli.input.OperationListView');
-        operationListView.setTitle("OP:" + node.address);
+        var operationListView = Ext.create('Mobcli.input.OperationListView', {
+            address: node.address
+        });
+        if(!node.leaf) {
+            operationListView.setTitle("OP:" + node.address);
+        }
+        else {
+            // append displayname for attribute node
+            operationListView.setTitle("OP:" + node.address + node.displayname);
+        }
         var store = operationListView.getStore();
         if(store != null) {
             store.setData({});

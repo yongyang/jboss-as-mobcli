@@ -5,6 +5,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -21,8 +22,7 @@ public class OperationLoader extends ModelNodeLoader {
     private static final List<String> leafOpList = Arrays.asList(leafOps);
 
     
-    private ModelNode readOperationNamesModelNode;
-    private Map<String, ModelNode> operationDescriptions = new HashMap<String, ModelNode>();
+    private List<ModelNode> operationDescriptionModelNodes = new ArrayList<ModelNode>();
 
     protected OperationLoader() {
         
@@ -32,24 +32,28 @@ public class OperationLoader extends ModelNodeLoader {
     protected void loadModelNode() {
         
         try {
-            readOperationNamesModelNode = getProxy().executeModelNode(getIp(), getPort(), getAddress() + ":read-operation-names");
-            if (!readOperationNamesModelNode.get("outcome").asString().equals("failed")) {
-                for (ModelNode name : readOperationNamesModelNode.get("result").asList()) {
-                    String operName = name.asString();
-/*
-                    if(operName.startsWith("\"")) {
-                        operName = operName.substring(1);
-                    }
-                    if(operName.endsWith("\"")) {
-                        operName = operName.substring(0, operName.length()-1);
-                    }
-*/
-                    
-                    ModelNode operationDescriptionModelNode = getProxy().executeModelNode(getIp(), getPort(), getAddress() + ":read-operation-description(name=" + name + ")");
-                    operationDescriptions.put(operName, operationDescriptionModelNode);
+            if(isLeaf()) {
+                for(String operName : leafOps) {
+                    ModelNode operationDescriptionModelNode = getProxy().executeModelNode(getIp(), getPort(), getAddress() + ":read-operation-description(name=\"" + operName + "\")");
+                    operationDescriptionModelNodes.add(operationDescriptionModelNode);
                 }
             }
-
+            else if(isGeneric()) {
+                for(String operName : genericOps) {
+                    ModelNode operationDescriptionModelNode = getProxy().executeModelNode(getIp(), getPort(), getAddress() + ":read-operation-description(name=\"" + operName + "\")");
+                    operationDescriptionModelNodes.add(operationDescriptionModelNode);
+                }
+            }
+            else {
+                ModelNode readOperationNamesModelNode = getProxy().executeModelNode(getIp(), getPort(), getAddress() + ":read-operation-names");
+                if (!readOperationNamesModelNode.get("outcome").asString().equals("failed")) {
+                    for (ModelNode name : readOperationNamesModelNode.get("result").asList()) {
+                        String operName = name.asString();
+                        ModelNode operationDescriptionModelNode = getProxy().executeModelNode(getIp(), getPort(), getAddress() + ":read-operation-description(name=\"" + operName + "\")");
+                        operationDescriptionModelNodes.add(operationDescriptionModelNode);
+                    }
+                }
+            }
         }
         catch (Exception e) {
             throw new RuntimeException("Failed to collect operation info.", e);
@@ -64,37 +68,17 @@ public class OperationLoader extends ModelNodeLoader {
 
         JSONArray operations = new JSONArray();
 
-        if (readOperationNamesModelNode.get("outcome").asString().equals("success")) {
-            for(ModelNode operationDescriptionModelNode : operationDescriptions.values()) {
-                if(operationDescriptionModelNode.get("outcome").asString().equals("success")) {
-                    String operationName = operationDescriptionModelNode.get("result").get("operation-name").asString();
-                    // filter operations
-                    if (isGeneric() && !genericOpList.contains(operationName)) continue;
-                    if (isLeaf() && !leafOpList.contains(operationName)) continue;
-                    if (!isGeneric() && !isLeaf() && operationName.equals("add")) continue;
-
-                    JSONObject operationJSON = (JSONObject)JSONValue.parse(operationDescriptionModelNode.get("result").toJSONString(false));
-                    operations.add(operationJSON);
-                }
-            }
-/*
-            
-            for (ModelNode name : readOperationNamesModelNode.get("result").asList()) {
-                String strName = name.asString();
-
+        for(ModelNode operationDescriptionModelNode : operationDescriptionModelNodes) {
+            if(operationDescriptionModelNode.get("outcome").asString().equals("success")) {
+                String operationName = operationDescriptionModelNode.get("result").get("operation-name").asString();
                 // filter operations
-                if (isGeneric() && !genericOpList.contains(strName)) continue;
-                if (isLeaf() && !leafOpList.contains(strName)) continue;
-                if (!isGeneric() && !isLeaf() && strName.equals("add")) continue;
+                if (isGeneric() && !genericOpList.contains(operationName)) continue;
+                if (isLeaf() && !leafOpList.contains(operationName)) continue;
+                if (!isGeneric() && !isLeaf() && operationName.equals("add")) continue;
 
-                JSONObject operationJSON = new JSONObject();
-                operationJSON.put("name", strName);
-                //TODO: get description string               
-                operationJSON.put("description", operationDescriptions.get(strName).asString());
+                JSONObject operationJSON = (JSONObject)JSONValue.parse(operationDescriptionModelNode.get("result").toJSONString(false));
                 operations.add(operationJSON);
             }
-*/
-
         }
 
         json.put("operations", operations);
