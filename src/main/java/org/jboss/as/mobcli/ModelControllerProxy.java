@@ -148,43 +148,6 @@ public class ModelControllerProxy {
             }
         }
 
-        private ModelNode getRootModelNode() {
-            //TODO: SEE org.jboss.as.cli.gui.ManagementModelNode.explore()
-/*
-            try {
-                String addressPath = "/";
-                ModelNode resourceDesc = execute(addressPath + ":read-resource-description");
-                resourceDesc = resourceDesc.get("result");
-                ModelNode response = execute(addressPath + ":read-resource(include-runtime=true,include-defaults=true)");
-                ModelNode result = response.get("result");
-                if (!result.isDefined()) return null;
-
-                List<String> childrenTypes = getChildrenTypes(addressPath);
-                for (ModelNode node : result.asList()) {
-                    Property prop = node.asProperty();
-                    if (childrenTypes.contains(prop.getName())) { // resource node
-                        if (hasGenericOperations(addressPath, prop.getName())) {
-                            add(new ManagementModelNode(cliGuiCtx, new UserObject(node, prop.getName())));
-                        }
-                        if (prop.getValue().isDefined()) {
-                            for (ModelNode innerNode : prop.getValue().asList()) {
-                                UserObject usrObj = new UserObject(innerNode, prop.getName(), innerNode.asProperty().getName());
-                                add(new ManagementModelNode(cliGuiCtx, usrObj));
-                            }
-                        }
-                    } else { // attribute node
-                        UserObject usrObj = new UserObject(node, resourceDesc, prop.getName(), prop.getValue().asString());
-                        add(new ManagementModelNode(cliGuiCtx, usrObj));
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-*/
-            return null;
-        }
-
         public ModelNode execute(String command) throws CommandFormatException, IOException, CliInitializationException {
             if(cmdCtx.isTerminated()) {
                 initCommandContext();
@@ -195,25 +158,6 @@ public class ModelControllerProxy {
             ModelNode modelNode = mcc.execute(request);
             lastActive = System.currentTimeMillis();
             return modelNode;
-        }
-
-        private List<String> getChildrenTypes(String addressPath) throws Exception {
-            List<String> childrenTypes = new ArrayList<String>();
-            ModelNode readChildrenTypes = execute(addressPath + ":read-children-types");
-            for (ModelNode type : readChildrenTypes.get("result").asList()) {
-                childrenTypes.add(type.asString());
-            }
-            return childrenTypes;
-        }
-
-        private boolean hasGenericOperations(String addressPath, String resourceName) throws Exception {
-            ModelNode response = execute(addressPath + resourceName + "=*/:read-operation-names");
-            if (response.get("outcome").asString().equals("failed")) return false;
-
-            for (ModelNode node : response.get("result").asList()) {
-                if (node.asString().equals("add")) return true;
-            }
-            return false;
         }
 
         public void close() {
