@@ -117,8 +117,8 @@ public class MobcliServlet extends HttpServlet {
         try {
             String nodeString = req.getParameter("node");
             //TODO: don't transfer node
-            JSONObject nodeJSON = (JSONObject)JSONValue.parse(nodeString);
-            OperationLoader.newOperationLoader("127.0.0.1", 9999, "address").toJSONObject();
+//            JSONObject nodeJSON = (JSONObject)JSONValue.parse(nodeString);
+//            OperationLoader.newOperationLoader("127.0.0.1", 9999, "address").toJSONObject();
             JSONObject operationJSON = new JSONObject();
 
             JSONArray names = new JSONArray();
@@ -128,7 +128,7 @@ public class MobcliServlet extends HttpServlet {
                 names.add(name);
             }
             
-            operationJSON.put("children",names);
+            operationJSON.put("operations",names);
             writeResponseJSON(resp, operationJSON);
         }
         catch (Exception e) {

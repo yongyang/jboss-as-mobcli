@@ -143,7 +143,7 @@ public class ResourceLoader {
             }
         }
 
-        json.put("children", children);
+        json.put("nodes", children);
         return json;
     }
 }

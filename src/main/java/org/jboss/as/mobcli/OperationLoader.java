@@ -1,9 +1,13 @@
 package org.jboss.as.mobcli;
 
+import org.jboss.dmr.ModelNode;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:yyang@redhat.com">Young Yang</a>
@@ -16,10 +20,16 @@ public class OperationLoader {
     private static final List<String> leafOpList = Arrays.asList(leafOps);
 
     private ModelControllerProxy proxy = ModelControllerProxy.getInstance();
+    
+    private ModelNode readOperationNamesModelNode;
+    private Map<String, ModelNode> operationDescriptions = new HashMap<String, ModelNode>(); 
 
     private String ip;
     private int port;
     private String address;
+    
+    private boolean isGeneric;
+    private boolean isLeaf;
 
     public static OperationLoader newOperationLoader(String ip, int port, String address) {
         return new OperationLoader(ip, port, address);
@@ -34,24 +44,14 @@ public class OperationLoader {
 
     private void load() {
         try {
-/*
-            ModelNode opNames = proxy.executeModelNode("127.0.0.1", 9999, address + ":read-operation-names");
-            if (opNames.get("outcome").asString().equals("failed")) return;
-*/
-
-/*
-        for (ModelNode name : opNames.get("result").asList()) {
-            String strName = name.asString();
-
-            // filter operations
-            if (node.isGeneric() && !genericOpList.contains(strName)) continue;
-            if (node.isLeaf() && !leafOpList.contains(strName)) continue;
-            if (!node.isGeneric() && !node.isLeaf() && strName.equals("add")) continue;
-
-            ModelNode opDescription = getResourceDescription(addressPath, strName);
-            add(new OperationAction(node, strName, opDescription));
-        }
-*/
+            readOperationNamesModelNode = proxy.executeModelNode(ip, port, address + ":read-operation-names");
+            if (!readOperationNamesModelNode.get("outcome").asString().equals("failed")) {
+                for (ModelNode name : readOperationNamesModelNode.get("result").asList()) {
+                    String operName = name.asString();
+                    ModelNode operationDescriptionModelNode = proxy.executeModelNode(ip, port, address + ":read-operation-description(name=\"" + name + "\")");
+                    operationDescriptions.put(operName, operationDescriptionModelNode);
+                }
+            }
 
         }
         catch (Exception e) {
@@ -59,7 +59,41 @@ public class OperationLoader {
         }
     }
 
+
+    public boolean isGeneric() {
+        return isGeneric;
+    }
+
+    public boolean isLeaf() {
+        return isLeaf;
+    }
+
+    @SuppressWarnings("unchecked")
     public JSONObject toJSONObject() {
-        return null;
+        JSONObject json = new JSONObject();
+        json.put("address", this.address);
+
+        JSONArray operations = new JSONArray();
+
+        if (!readOperationNamesModelNode.get("outcome").asString().equals("failed")) {
+            for (ModelNode name : readOperationNamesModelNode.get("result").asList()) {
+                String strName = name.asString();
+
+                // filter operations
+                if (isGeneric() && !genericOpList.contains(strName)) continue;
+                if (isLeaf() && !leafOpList.contains(strName)) continue;
+                if (!isGeneric() && !isLeaf() && strName.equals("add")) continue;
+
+                JSONObject operationJSON = new JSONObject();
+                operationJSON.put("name", strName);
+                //TODO: get description string
+                operationJSON.put("description", operationDescriptions.get(strName).asString());
+                operations.add(operationJSON);
+            }
+
+        }
+
+        json.put("operations", operations);
+        return json;
     }
 }

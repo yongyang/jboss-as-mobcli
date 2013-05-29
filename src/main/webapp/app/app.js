@@ -68,7 +68,7 @@ Ext.application({
                 });
 
         Ext.Viewport.add(tabPanel);
-//        inputNavigationView.pushNewList("/");
+//        inputNavigationView.pushNodeListView("/");
 
     }
 });

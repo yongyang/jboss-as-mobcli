@@ -31,7 +31,7 @@ Ext.define("Mobcli.input.NodeStore", {
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             reader: {
                 type: 'json',
-                rootProperty: 'data.children'
+                rootProperty: 'data.nodes'
             },
 
             listeners : {
@@ -66,7 +66,7 @@ Ext.define('Mobcli.input.NodeListView', {
                     }
                     else {
                         var address = record.getData().address;
-                        Ext.getCmp('inputNavigationView').pushNewList(address);
+                        Ext.getCmp('inputNavigationView').pushNodeListView(address);
                     }
 
                 },
@@ -110,7 +110,7 @@ Ext.define('Mobcli.input.OperationStore', {
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             reader: {
                 type: 'json',
-                rootProperty: 'data.children'
+                rootProperty: 'data.operations'
             },
 
             listeners : {
@@ -128,6 +128,7 @@ Ext.define('Mobcli.input.OperationListView', {
     extend: 'Ext.List',
     config: {
         title: 'OP:',
+        ui: 'round',
         singleton: true,
         itemTpl: '<div>{name}</div>'
     },
@@ -145,7 +146,7 @@ Ext.define("Mobcli.input.NavigationView", {
         iconCls: 'search',
         items:[]
     },
-    pushNewList: function(address) {
+    pushNodeListView: function(address) {
         var store = Ext.create("Mobcli.input.NodeStore"); 
         var newList = Ext.create('Mobcli.input.NodeListView',{
             address: address,
