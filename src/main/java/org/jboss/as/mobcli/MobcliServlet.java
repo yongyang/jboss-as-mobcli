@@ -4,7 +4,6 @@ import org.jboss.dmr.ModelNode;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.AsyncEvent;
@@ -17,10 +16,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RunnableFuture;
 
 /**
  * @author <a href="mailto:yyang@redhat.com">Yong Yang</a>
@@ -55,19 +54,16 @@ public class MobcliServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        processAsync(req, resp);
+        doPost(req, resp);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        processAsync(req, resp);
+        process(req, resp);
+        //processAsync(req, resp);
     }
 
-    private void processAsync(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-        final AsyncContext asyncContext = req.startAsync();
-        asyncContext.addListener(asyncListener);
-
+    private void process(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String pathInfo = req.getPathInfo();
         if(pathInfo.startsWith("/")) {
             pathInfo=pathInfo.substring(1);
@@ -76,39 +72,40 @@ public class MobcliServlet extends HttpServlet {
         if(pathInfo.endsWith("/")) {
             pathInfo=pathInfo.substring(0, pathInfo.length()-1);
         }
-        
+
         if(pathInfo.equals("resources")) { // list all resources of an address path
-            executor.execute(new Runnable() {
-                public void run() {
-                    listResource(asyncContext);
-                }
-            });
+                    listResource(req, resp);
         }
         else if(pathInfo.equals("operations")) { // list operations of an resouce node
-            executor.execute(new Runnable() {
-                public void run() {
-                    listOperation(asyncContext);
-                }
-            });
+                    listOperation(req, resp);
         }
         else if(pathInfo.equals("command")){ // execute submitted command
-            executor.execute(new Runnable() {
-                public void run() {
-                    executeCommand(asyncContext);
-                }
-            });
+                    executeCommand(req, resp);
         }
         else {
-            throw new IllegalArgumentException(req.getPathInfo());
+            throw new ServletException(new IllegalArgumentException(req.getPathInfo()));
         }
+        
     }
 
-    private void listResource(AsyncContext asyncContext) {
-        ServletResponse resp = asyncContext.getResponse();
-        ServletRequest req = asyncContext.getRequest();
+    private void processAsync(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+        final AsyncContext asyncContext = req.startAsync();
+        asyncContext.addListener(asyncListener);
+
+        executor.submit(new Callable<Void>() {
+            public Void call() throws Exception {
+                process((HttpServletRequest) asyncContext.getRequest(), (HttpServletResponse) asyncContext.getResponse());
+                return (Void)null;
+            }
+        });
+
+    }
+
+    private void listResource(ServletRequest req,  ServletResponse resp) {
         try {
             String address = req.getParameter("addr");
-            JSONObject resourceJSON = ResourceParser.newResourceParser("127.0.0.1", 9999, address).toJSONObject();
+            JSONObject resourceJSON = ResourceLoader.newResourceLoader("127.0.0.1", 9999, address).toJSONObject();
             writeResponseJSON(resp, resourceJSON);
         }
         catch (Exception e) {
@@ -116,14 +113,12 @@ public class MobcliServlet extends HttpServlet {
         }
     }
 
-    private void listOperation(AsyncContext asyncContext) {
-        ServletResponse resp = asyncContext.getResponse();
-        ServletRequest req = asyncContext.getRequest();
+    private void listOperation(ServletRequest req,  ServletResponse resp) {
         try {
             String nodeString = req.getParameter("node");
             //TODO: don't transfer node
             JSONObject nodeJSON = (JSONObject)JSONValue.parse(nodeString);
-            OperationParser.newOperationParser("127.0.0.1", 9999, "address").toJSONObject();
+            OperationLoader.newOperationLoader("127.0.0.1", 9999, "address").toJSONObject();
             JSONObject operationJSON = new JSONObject();
 
             JSONArray names = new JSONArray();
@@ -151,7 +146,7 @@ public class MobcliServlet extends HttpServlet {
     }
 
 
-    private void executeCommand(AsyncContext asyncContext){
+    private void executeCommand(ServletRequest req,  ServletResponse resp){
 
     }
 

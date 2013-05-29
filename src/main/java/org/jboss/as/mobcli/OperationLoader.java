@@ -1,6 +1,5 @@
 package org.jboss.as.mobcli;
 
-import org.jboss.dmr.ModelNode;
 import org.json.simple.JSONObject;
 
 import java.util.Arrays;
@@ -9,7 +8,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:yyang@redhat.com">Young Yang</a>
  */
-public class OperationParser {
+public class OperationLoader {
 
     private static final String[] genericOps = {"add", "read-operation-description", "read-resource-description", "read-operation-names"};
     private static final List<String> genericOpList = Arrays.asList(genericOps);
@@ -22,11 +21,11 @@ public class OperationParser {
     private int port;
     private String address;
 
-    public static OperationParser newOperationParser(String ip, int port, String address) {
-        return new OperationParser(ip, port, address);
+    public static OperationLoader newOperationLoader(String ip, int port, String address) {
+        return new OperationLoader(ip, port, address);
     }
 
-    private OperationParser(String ip, int port, String address) {
+    private OperationLoader(String ip, int port, String address) {
         this.ip = ip;
         this.port = port;
         this.address = address;

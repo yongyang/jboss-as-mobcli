@@ -4,14 +4,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.json.simple.JSONArray;
-import org.json.simple.JSONAware;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +15,7 @@ import java.util.Map;
  * @author <a href="mailto:yyang@redhat.com">Yong Yang</a>
  * @create 5/23/13 3:11 PM
  */
-public class ResourceParser {
+public class ResourceLoader {
 
     private String ip;
     private int port;
@@ -35,15 +30,15 @@ public class ResourceParser {
 
     private ModelControllerProxy proxy = ModelControllerProxy.getInstance();
 
-    private ResourceParser(String ip, int port, String address) {
+    private ResourceLoader(String ip, int port, String address) {
         this.ip = ip;
         this.port = port;
         this.address = address;
         load();
     }
 
-    public static ResourceParser newResourceParser(String ip, int port, String address) {
-        return new ResourceParser(ip, port, address);
+    public static ResourceLoader newResourceLoader(String ip, int port, String address) {
+        return new ResourceLoader(ip, port, address);
     }
 
     private void load() {
