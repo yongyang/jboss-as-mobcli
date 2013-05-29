@@ -12,7 +12,13 @@ Ext.application({
                     address: '~',
                     store: {
                         data: [
-                            {name: '/', address: '/', value: '/', displayname: '/', leaf: false}
+                            Ext.create('Mobcli.input.NodeModel', {
+                                name: '/', 
+                                address: '/', 
+                                value: '/', 
+                                displayname: '/', 
+                                leaf: false,
+                                generic: false}).getData()
                         ]
                     }
                 })            
@@ -68,7 +74,5 @@ Ext.application({
                 });
 
         Ext.Viewport.add(tabPanel);
-//        inputNavigationView.pushNodeListView("/");
-
     }
 });

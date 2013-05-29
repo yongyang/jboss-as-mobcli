@@ -104,8 +104,9 @@ public class MobcliServlet extends HttpServlet {
 
     private void listResource(ServletRequest req,  ServletResponse resp) {
         try {
-            String address = req.getParameter("addr");
-            JSONObject resourceJSON = ResourceLoader.newResourceLoader("127.0.0.1", 9999, address).toJSONObject();
+            String nodeString = req.getParameter("node");
+            JSONObject nodeJSON = (JSONObject)JSONValue.parse(nodeString);
+            JSONObject resourceJSON = ModelNodeLoader.newResourceLoader().load("127.0.0.1", 9999, nodeJSON).toJSONObject();
             writeResponseJSON(resp, resourceJSON);
         }
         catch (Exception e) {
@@ -116,9 +117,9 @@ public class MobcliServlet extends HttpServlet {
     private void listOperation(ServletRequest req,  ServletResponse resp) {
         try {
             String nodeString = req.getParameter("node");
-            //TODO: don't transfer node
-//            JSONObject nodeJSON = (JSONObject)JSONValue.parse(nodeString);
-//            OperationLoader.newOperationLoader("127.0.0.1", 9999, "address").toJSONObject();
+            JSONObject nodeJSON = (JSONObject)JSONValue.parse(nodeString);
+            JSONObject operationJSON = ModelNodeLoader.newOperationLoader().load("127.0.0.1", 9999, nodeJSON).toJSONObject();
+/*
             JSONObject operationJSON = new JSONObject();
 
             JSONArray names = new JSONArray();
@@ -129,6 +130,7 @@ public class MobcliServlet extends HttpServlet {
             }
             
             operationJSON.put("operations",names);
+*/
             writeResponseJSON(resp, operationJSON);
         }
         catch (Exception e) {

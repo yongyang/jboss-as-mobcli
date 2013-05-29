@@ -8,7 +8,8 @@ Ext.define('Mobcli.input.NodeModel', {
             {name: 'name', type: 'string'}, // name
             {name: 'value', type: 'string'}, // value
             {name: 'displayname', type: 'string'}, // display name
-            {name: 'leaf', type: 'boolean'} // is path or property, path is not leaf
+            {name: 'leaf', type: 'boolean'}, // is path or property, path is not leaf
+            {name: 'generic', type: 'boolean', default: false} // is generic path
         ]
     }
 });
@@ -28,6 +29,11 @@ Ext.define("Mobcli.input.NodeStore", {
         proxy: {
             type: 'ajax',
             url: 'cliservlet/resources',
+/*
+            actionMethods: {
+                read: 'POST'
+            },
+*/
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             reader: {
                 type: 'json',
@@ -56,17 +62,15 @@ Ext.define('Mobcli.input.NodeListView', {
             singleton: false,
             itemTpl: '<div>{displayname}</div>',
             onItemDisclosure: true,
-            emptyText: 'No items',
+            emptyText: 'No nodes',
             listeners: {
-                scope: this,
                 itemtap: function(list, index, target, record, e, eOpts) {
                     var leaf = record.getData().leaf;
                     if(leaf) {
                         Ext.Msg.alert("Alert", "Couldn't expand a property.");
                     }
                     else {
-                        var address = record.getData().address;
-                        Ext.getCmp('inputNavigationView').pushNodeListView(address);
+                        Ext.getCmp('inputNavigationView').pushNodeListView(record.getData());
                     }
 
                 },
@@ -91,9 +95,11 @@ Ext.define('Mobcli.input.OperationModel', {
     extend: 'Ext.data.Model',
     config: {
         fields: [
-            {name: 'name', type: 'string'}, // name
+            {name: 'operation-name', type: 'string'}, // name
             {name: 'description', type: 'string'}, // description
-            {name: 'params', type: 'string'} // prams
+            {name: 'request-properties'}, // prams
+            {name: 'reply-properties'}, // prams
+            {name: 'read-only', type: 'boolean'} // prams
         ]
     }
 
@@ -107,6 +113,11 @@ Ext.define('Mobcli.input.OperationStore', {
         proxy: {
             type: 'ajax',
             url: 'cliservlet/operations',
+/*
+            actionMethods: {
+                read: 'POST'
+            },
+*/
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             reader: {
                 type: 'json',
@@ -130,7 +141,16 @@ Ext.define('Mobcli.input.OperationListView', {
         title: 'OP:',
         ui: 'round',
         singleton: true,
-        itemTpl: '<div>{name}</div>'
+        itemTpl: '<div>{operation-name} - <small>{description}<small></div>',
+        emptyText: 'No operation',
+        listeners: {
+            itemtap: function(list, index, target, record, e, eOpts) {
+                var leaf = record.getData().leaf;
+                Ext.Msg.alert("Alert", "Couldn't expand a property.");
+                console.log(record.getData());
+            }
+        }
+
     },
     initialize: function() {
         this.callParent();
@@ -146,14 +166,14 @@ Ext.define("Mobcli.input.NavigationView", {
         iconCls: 'search',
         items:[]
     },
-    pushNodeListView: function(address) {
+    pushNodeListView: function(node) {
         var store = Ext.create("Mobcli.input.NodeStore"); 
         var newList = Ext.create('Mobcli.input.NodeListView',{
-            address: address,
+            address: node.address,
             store: store
         });
         this.push(newList);
-        store.load({params: {addr: newList.getAddress()}});
+        store.load({params: {node: Ext.JSON.encode(node)}});
     },
     pushOperationListView : function(node) {
         var operationListView = Ext.create('Mobcli.input.OperationListView');
@@ -168,7 +188,6 @@ Ext.define("Mobcli.input.NavigationView", {
         }
         this.push(operationListView);
 //        console.log(node);
-        //TODO: don't use node, specify generic, leaf
         store.load({params: {node: Ext.JSON.encode(node)}});        
     }
 });

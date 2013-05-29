@@ -15,11 +15,8 @@ import java.util.Map;
  * @author <a href="mailto:yyang@redhat.com">Yong Yang</a>
  * @create 5/23/13 3:11 PM
  */
-public class ResourceLoader {
+public class ResourceLoader extends  ModelNodeLoader{
 
-    private String ip;
-    private int port;
-    private String address;
 
     private ModelNode readResourceModelNode;
     private ModelNode readResourceDescriptionModelNode;
@@ -30,27 +27,21 @@ public class ResourceLoader {
 
     private ModelControllerProxy proxy = ModelControllerProxy.getInstance();
 
-    private ResourceLoader(String ip, int port, String address) {
-        this.ip = ip;
-        this.port = port;
-        this.address = address;
-        load();
+
+    protected ResourceLoader() {
     }
 
-    public static ResourceLoader newResourceLoader(String ip, int port, String address) {
-        return new ResourceLoader(ip, port, address);
-    }
-
-    private void load() {
+    @Override
+    protected void loadModelNode() {
         // wrapper method for read-resource
         String[] commands = new String[]{
-                address + ":read-resource(include-runtime=true,include-defaults=true)",
-                address + ":read-resource-description(recursive-depth=1)", //TODO: read children's description one time, so the children's tooltip can be displayed after loading
-                address + ":read-children-types"
+                getAddress() + ":read-resource(include-runtime=true,include-defaults=true)",
+                getAddress() + ":read-resource-description(recursive-depth=1)", //TODO: read children's description one time, so the children's tooltip can be displayed after loading
+                getAddress() + ":read-children-types"
         };
 
         try {
-            ModelNode[] result = proxy.executeBatchModelNode(ip, port, commands);
+            ModelNode[] result = proxy.executeBatchModelNode(getIp(), getPort(), commands);
 
             this.readResourceModelNode = result[0];
             this.readResourceDescriptionModelNode = result[1];
@@ -61,7 +52,7 @@ public class ResourceLoader {
                 for (ModelNode node : resourceResponse.asList()) {
                     Property prop = node.asProperty();
                     String resource = prop.getName();
-                    ModelNode readOperationNamesModelNode = proxy.executeModelNode(ip, port, address + resource + "=*/:read-operation-names");
+                    ModelNode readOperationNamesModelNode = proxy.executeModelNode(getIp(), getPort(), getAddress() + resource + "=*/:read-operation-names");
                     this.addGenericOperationResult(resource, readOperationNamesModelNode);
                 }
             }
@@ -69,10 +60,6 @@ public class ResourceLoader {
         catch (Exception e) {
             throw new RuntimeException("Failed to collect resources info.", e);
         }
-    }
-
-    public String getAddress() {
-        return address;
     }
 
     public ModelNode getReadResourceModelNode() {
@@ -247,6 +234,7 @@ class AttributeNodeObject extends NodeObject {
         json.put("value", getValue());
         json.put("displayname", getName() + getSeparator() + getValue());
         json.put("leaf", isLeaf());
+        json.put("generic", false);
         return json;
     }
 }
