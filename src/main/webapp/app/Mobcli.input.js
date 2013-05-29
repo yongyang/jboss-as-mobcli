@@ -136,7 +136,7 @@ Ext.define('Mobcli.input.OperationListView', {
     }
 });
 
-Ext.define("Ext.input.NavigationView", {
+Ext.define("Mobcli.input.NavigationView", {
     extend: "Ext.NavigationView",
     config: {
         id: 'inputNavigationView',

@@ -5,7 +5,19 @@ Ext.require('Ext.tab.Panel');
 Ext.application({
     launch: function() {
 
-        var inputNavigationView = Ext.create("Ext.input.NavigationView");
+        var inputNavigationView = Ext.create("Mobcli.input.NavigationView", {
+            items: [
+                Ext.create('Mobcli.input.NodeListView',                {
+                    title: 'PATH:',
+                    address: '~',
+                    store: {
+                        data: [
+                            {name: '/', address: '/', value: '/', displayname: '/', leaf: false}
+                        ]
+                    }
+                })            
+            ]
+        });
         
         var tabPanel =  Ext.create("Ext.tab.Panel", {
                 id: 'mainTabPanel',
@@ -56,7 +68,7 @@ Ext.application({
                 });
 
         Ext.Viewport.add(tabPanel);
-        inputNavigationView.pushNewList("/");
+//        inputNavigationView.pushNewList("/");
 
     }
 });

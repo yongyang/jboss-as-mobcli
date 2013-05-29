@@ -45,7 +45,7 @@ public class ResourceLoader {
         // wrapper method for read-resource
         String[] commands = new String[]{
                 address + ":read-resource(include-runtime=true,include-defaults=true)",
-                address + ":read-resource-description(recursive-depth=1)", //red children's description one time, so the children's tooltip can be displayed after loading
+                address + ":read-resource-description(recursive-depth=1)", //TODO: read children's description one time, so the children's tooltip can be displayed after loading
                 address + ":read-children-types"
         };
 
