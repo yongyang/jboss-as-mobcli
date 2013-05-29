@@ -65,14 +65,15 @@ Ext.define('Mobcli.input.NodeListView', {
             emptyText: 'No nodes',
             listeners: {
                 itemtap: function(list, index, target, record, e, eOpts) {
-                    var leaf = record.getData().leaf;
-                    if(leaf) {
+                    if(record.getData().leaf) {
                         Ext.Msg.alert("Alert", "Couldn't expand a property.");
+                    }
+                    else if(record.getData().generic) {
+                        Ext.Msg.alert("Alert", "Couldn't expand a generic path.");
                     }
                     else {
                         Ext.getCmp('inputNavigationView').pushNodeListView(record.getData());
                     }
-
                 },
                 disclose: function(list, record, target, index, e, eOpts ) {
                     e.stopEvent();

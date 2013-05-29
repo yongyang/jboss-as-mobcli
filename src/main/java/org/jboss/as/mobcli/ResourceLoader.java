@@ -214,7 +214,7 @@ class AttributeNodeObject extends NodeObject {
     private AttributeDescription attribDesc = null;
 
     AttributeNodeObject(String baseAddress, String name, String value, AttributeDescription attribDesc) {
-        super(baseAddress, name, value, true, attribDesc.isGraphable() ? " \u2245 " : "=>");
+        super(baseAddress, name, value, true, attribDesc.isGraphable() ? " &#x2248; " : "=>"); // &#x2248; is ≈
         this.attribDesc = attribDesc;
     }
 
