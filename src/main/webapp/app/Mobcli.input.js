@@ -156,18 +156,41 @@ Ext.define('Mobcli.input.OperationListView', {
                     description: record.getData()['description']
                 }).show();
 */
-                Ext.Viewport.add({
-                    xtype: 'panel',
-                    modal: true,
+                var popup = Ext.create('Ext.Panel', {
+                    modal : true,
+                    centered : true,
+                    width : '90%',
+                    height : '80%',
+                    layout: 'fit',
                     hideOnMaskTap: true,
-                    centered: true,
-                    items: [
-                        Ext.create('Mobcli.input.FormPanel', {
-                            name: record.getData()['operation-name'],
-                            description: record.getData()['description']
-                        })
-                    ]
-                });
+                    items : [
+                        {
+                            docked : 'top',
+                            xtype : 'toolbar',
+                            title : 'Add Borrower'
+                        },                        
+                        {
+                            xtype : 'formpanel',
+                            items : [
+                                {
+                                    xtype: 'fieldset',
+                                    title: 'this.getName()',
+                                    items: [                            
+                                        {
+                                            xtype : 'textfield',
+                                            name : 'hello',
+                                            label : 'hello'
+                                        }
+                                    ]
+
+                                }]
+                        }
+                    ],
+                    scrollable : true
+                    }
+                );
+
+                Ext.Viewport.add(popup);
                 console.log(record.getData());
             }
         }
