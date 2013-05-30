@@ -185,7 +185,7 @@ Ext.define("Mobcli.input.OperationPanel", {
             
             var fieldSet = Ext.create('Ext.form.FieldSet', {
                 title: 'Parameters:',
-                instructions: this.getOperation()['description']
+                instructions: this.getOperation()['description']  + '<br>'
             });
             
             //TODO: add fields to FieldSet
@@ -195,14 +195,16 @@ Ext.define("Mobcli.input.OperationPanel", {
                     name: key,
                     label: key,
                     clearIcon: true,
-                    required: this.getOperation()['request-properties'][key]['required'],
-                    placeHolder: this.getOperation()['request-properties'][key]['description']
+                    required: this.getOperation()['request-properties'][key]['required']
+// use instructions to show the description because some descriptions are too long for placeholder
+//                    placeHolder: this.getOperation()['request-properties'][key]['description'] 
                 }));
+
+                fieldSet.setInstructions(fieldSet.getInstructions() + "<br>" + "<b>" + key + ": </b>" +  this.getOperation()['request-properties'][key]['description']);
             }
             formPanel.add(fieldSet);
-            this.add(formPanel);
             var buttonContainer = Ext.create('Ext.Container', {
-                layout: {type: 'hbox', pack: 'right', align: 'right'},
+                layout: {type: 'hbox', pack: 'right', align: 'bottom'},
                 defaults: {
                     xtype: 'button'
                 },
@@ -223,8 +225,9 @@ Ext.define("Mobcli.input.OperationPanel", {
                     }
                 ]
             });
-            
-            this.add(buttonContainer);
+            formPanel.add(buttonContainer);
+            this.add(formPanel);
+
         }
     }
 );
