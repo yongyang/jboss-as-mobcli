@@ -64,12 +64,7 @@ Ext.application({
                         iconCls: 'settings',
                         hidden: (Ext.filterPlatform('ie10') && Ext.os.is.Phone) ? true : false
                     },
-                    {
-                        title: 'About',
-                        html: '<p>Docking tabs to the bottom will automatically change their style.</p>',
-                        iconCls: 'info',
-                        cls: 'card'
-                    }
+                    Ext.create('Mobcli.about.AboutPanel')
                 ]
                 });
 

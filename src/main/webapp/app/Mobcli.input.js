@@ -144,83 +144,90 @@ Ext.define('Mobcli.input.OperationListView', {
         ui: 'round',
         singleton: true,
         itemTpl: '<div>{operation-name} <small>({description}<small>)</div>',
-        emptyText: 'No operation',
-        listeners: {
-            itemtap: function(list, index, target, record, e, eOpts) {
-                var leaf = record.getData().leaf;
-//                Ext.Msg.alert("List Address", list.getAddress());
-
-/*
-                Ext.create('Mobcli.input.FormPanel', {
-                    name: record.getData()['operation-name'],
-                    description: record.getData()['description']
-                }).show();
-*/
-                var popup = Ext.create('Ext.Panel', {
-                    modal : true,
-                    centered : true,
-                    width : '90%',
-                    height : '80%',
-                    layout: 'fit',
-                    hideOnMaskTap: true,
-                    items : [
-                        {
-                            docked : 'top',
-                            xtype : 'toolbar',
-                            title : 'Add Borrower'
-                        },                        
-                        {
-                            xtype : 'formpanel',
-                            items : [
-                                {
-                                    xtype: 'fieldset',
-                                    title: 'this.getName()',
-                                    items: [                            
-                                        {
-                                            xtype : 'textfield',
-                                            name : 'hello',
-                                            label : 'hello'
-                                        }
-                                    ]
-
-                                }]
-                        }
-                    ],
-                    scrollable : true
-                    }
-                );
-
-                Ext.Viewport.add(popup);
-                console.log(record.getData());
-            }
-        }
-
+        emptyText: 'No operation'
     },
-    initialize: function() {
-        this.callParent();
+    showOperationPanel: function(operation) {
+        //TODO: memory leak???
+        var popup = Ext.create('Mobcli.input.OperationPanel', {
+            operation: operation,
+            address: this.getAddress()
+        });
+        Ext.Viewport.add(popup);            
     }
 });
 
-Ext.define("Mobcli.input.FormPanel", {
-    extend: 'Ext.form.Panel',
-    config: {
-        layout: 'vbox',
-        name: null,
-        description: null,
-        modal: true,
-        hideOnMaskTap: true,
-        centered: true,
-        items: [
-            {
-                scope: this,
-                xtype: 'fieldset',
-                title: 'this.getName()'
-//                instructions: this.getDescription()
+Ext.define("Mobcli.input.OperationPanel", {
+        extend: 'Ext.Panel',
+        config: {
+            address: null,
+            operation: null,
+            modal : true,
+            centered : true,
+            width : '90%',
+            height : '80%',
+            layout: 'fit',
+            hideOnMaskTap: true,
+            scrollable : true
+        },
+        
+        initialize: function() {
+            this.callParent();
+            this.add(
+                Ext.create('Ext.Toolbar', {
+                    docked : 'top',
+                    title: this.getAddress() + ':' + this.getOperation()['operation-name']
+                })
+            );
+            
+            var formPanel = Ext.create('Ext.form.Panel', {
+                ui: 'round'
+            });
+            
+            var fieldSet = Ext.create('Ext.form.FieldSet', {
+                title: 'Parameters:',
+                instructions: this.getOperation()['description']
+            });
+            
+            //TODO: add fields to FieldSet
+            for(var key in this.getOperation()['request-properties']) {
+                console.log(key);
+                fieldSet.add(Ext.create('Ext.field.Text',{
+                    name: key,
+                    label: key,
+                    clearIcon: true,
+                    required: this.getOperation()['request-properties'][key]['required'],
+                    placeHolder: this.getOperation()['request-properties'][key]['description']
+                }));
             }
-        ]
+            formPanel.add(fieldSet);
+            this.add(formPanel);
+            var buttonContainer = Ext.create('Ext.Container', {
+                layout: {type: 'hbox', pack: 'right', align: 'right'},
+                defaults: {
+                    xtype: 'button'
+                },
+                items: [
+                    {
+                        text: 'Submit',
+                        handler: function(btn) {
+                            Ext.Msg.alert("Submitting...")
+                        }
+                    
+                    },
+                    {
+                        scope: this,
+                        text: 'Cancel',
+                        handler: function(btn) {
+                            this.hide();
+                        }
+                    }
+                ]
+            });
+            
+            this.add(buttonContainer);
+        }
     }
-    
-});
+);
 
 Ext.define("Mobcli.input.NavigationView", {
     extend: "Ext.NavigationView",
@@ -242,7 +249,22 @@ Ext.define("Mobcli.input.NavigationView", {
     },
     pushOperationListView : function(node) {
         var operationListView = Ext.create('Mobcli.input.OperationListView', {
-            address: node.address
+            address: node.address,
+            listeners: {
+                itemtap: function(list, index, target, record, e, eOpts) {
+                    var leaf = record.getData().leaf;
+//                Ext.Msg.alert("List Address", list.getAddress());
+
+                    /*
+                     Ext.create('Mobcli.input.FormPanel', {
+                     name: record.getData()['operation-name'],
+                     description: record.getData()['description']
+                     }).show();
+                     */
+                    console.log("itemtap: " + record.getData()['description']);
+                    list.showOperationPanel(record.getData());
+                }
+            }
         });
         if(!node.leaf) {
             operationListView.setTitle("OP:" + node.address);
