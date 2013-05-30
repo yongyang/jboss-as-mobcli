@@ -148,7 +148,26 @@ Ext.define('Mobcli.input.OperationListView', {
         listeners: {
             itemtap: function(list, index, target, record, e, eOpts) {
                 var leaf = record.getData().leaf;
-                Ext.Msg.alert("List Address", list.getAddress());
+//                Ext.Msg.alert("List Address", list.getAddress());
+
+/*
+                Ext.create('Mobcli.input.FormPanel', {
+                    name: record.getData()['operation-name'],
+                    description: record.getData()['description']
+                }).show();
+*/
+                Ext.Viewport.add({
+                    xtype: 'panel',
+                    modal: true,
+                    hideOnMaskTap: true,
+                    centered: true,
+                    items: [
+                        Ext.create('Mobcli.input.FormPanel', {
+                            name: record.getData()['operation-name'],
+                            description: record.getData()['description']
+                        })
+                    ]
+                });
                 console.log(record.getData());
             }
         }
@@ -157,6 +176,27 @@ Ext.define('Mobcli.input.OperationListView', {
     initialize: function() {
         this.callParent();
     }
+});
+
+Ext.define("Mobcli.input.FormPanel", {
+    extend: 'Ext.form.Panel',
+    config: {
+        layout: 'vbox',
+        name: null,
+        description: null,
+        modal: true,
+        hideOnMaskTap: true,
+        centered: true,
+        items: [
+            {
+                scope: this,
+                xtype: 'fieldset',
+                title: 'this.getName()'
+//                instructions: this.getDescription()
+            }
+        ]
+    }
+    
 });
 
 Ext.define("Mobcli.input.NavigationView", {
