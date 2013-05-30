@@ -188,25 +188,67 @@ Ext.define("Mobcli.input.OperationPanel", {
                 instructions: this.getOperation()['description']  + '<br>'
             });
             
-            //TODO: add fields to FieldSet
-            for(var key in this.getOperation()['request-properties']) {
-                console.log(key);
-                fieldSet.add(Ext.create('Ext.field.Text',{
-                    name: key,
-                    label: key,
-                    clearIcon: true,
-                    required: this.getOperation()['request-properties'][key]['required']
-// use instructions to show the description because some descriptions are too long for placeholder
-//                    placeHolder: this.getOperation()['request-properties'][key]['description'] 
-                }));
-
-                fieldSet.setInstructions(fieldSet.getInstructions() + "<br>" + "<b>" + key + ": </b>" +  this.getOperation()['request-properties'][key]['description']);
+            //add fields to FieldSet
+            for(var paramName in this.getOperation()['request-properties']) {
+                console.log(paramName);
+                if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'STRING') {
+                    fieldSet.add(Ext.create('Ext.field.Text',{
+                        name: paramName,
+                        label: paramName,
+                        clearIcon: true,
+                        required: this.getOperation()['request-properties'][paramName]['required']
+    // use instructions to show the description because some descriptions are too long for placeholder
+    //                    placeHolder: this.getOperation()['request-properties'][key]['description']
+                    }));
+                }
+                else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'BOOLEAN'){
+                    fieldSet.add(Ext.create('Ext.field.Checkbox',{
+                        name: paramName,
+                        label: paramName,
+                        clearIcon: true,
+                        value: 'true',
+                        required: this.getOperation()['request-properties'][paramName]['required']
+                    }));
+                }
+                else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'INT'){
+                    fieldSet.add(Ext.create('Ext.field.Number',{
+                        name: paramName,
+                        label: paramName,
+                        clearIcon: true,
+                        minValue: this.getOperation()['request-properties'][paramName]['min'],
+                        maxValue: this.getOperation()['request-properties'][paramName]['max'],
+                        required: this.getOperation()['request-properties'][paramName]['required']
+                    }));
+                }
+                else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'BYTES'){
+                    fieldSet.add(Ext.create('Ext.field.Spinner',{
+                        name: paramName,
+                        label: paramName,
+                        clearIcon: true,
+                        minValue: this.getOperation()['request-properties'][paramName]['min'] ? this.getOperation()['request-properties'][paramName]['min'] : -127 ,
+                        maxValue: this.getOperation()['request-properties'][paramName]['max'] ? this.getOperation()['request-properties'][paramName]['max'] : 127,
+                        required: this.getOperation()['request-properties'][paramName]['required'],
+                        stepValue: 1,
+                        cycle: true
+                    }));
+                }
+                else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'LIST'){
+                    //TODO:
+                }
+                else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'OBJECT'){
+                    //TODO:
+                }
+                else {
+                    Ext.Msg.alert('Alert', 'Not supported parameter type: ' + this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE']);
+                }
+                fieldSet.setInstructions(fieldSet.getInstructions() + "<br>" + "<b>" + paramName + ": </b>" +  this.getOperation()['request-properties'][paramName]['description']);
             }
             formPanel.add(fieldSet);
             var buttonContainer = Ext.create('Ext.Container', {
-                layout: {type: 'hbox', pack: 'right', align: 'bottom'},
+                layout: {type: 'hbox', pack: 'end'},
                 defaults: {
-                    xtype: 'button'
+                    xtype: 'button',
+                    margin: 10
                 },
                 items: [
                     {

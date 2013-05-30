@@ -21,7 +21,6 @@ public class OperationLoader extends ModelNodeLoader {
     private static final String[] leafOps = {"write-attribute", "undefine-attribute"};
     private static final List<String> leafOpList = Arrays.asList(leafOps);
 
-    
     private List<ModelNode> operationDescriptionModelNodes = new ArrayList<ModelNode>();
 
     protected OperationLoader() {
@@ -45,11 +44,13 @@ public class OperationLoader extends ModelNodeLoader {
                 }
             }
             else {
+                //TODO: 可以只返回operation names列表，点击 operation 时再 read-operation-description
                 ModelNode readOperationNamesModelNode = getProxy().executeModelNode(getIp(), getPort(), getAddress() + ":read-operation-names");
                 if (!readOperationNamesModelNode.get("outcome").asString().equals("failed")) {
                     for (ModelNode name : readOperationNamesModelNode.get("result").asList()) {
                         String operName = name.asString();
                         ModelNode operationDescriptionModelNode = getProxy().executeModelNode(getIp(), getPort(), getAddress() + ":read-operation-description(name=\"" + operName + "\")");
+//                        System.out.println(operationDescriptionModelNode.toJSONString(false));
                         operationDescriptionModelNodes.add(operationDescriptionModelNode);
                     }
                 }
