@@ -277,10 +277,11 @@ Ext.define("Mobcli.input.OperationPanel", {
                     {
                         text: 'Submit',
                         handler: function(btn) {
-                            
                             formPanel.submit({
                                 url: 'cliservlet/execute',
                                 method: 'GET',
+                                autoAbort: true,
+                                waitMsg: {xtype: 'loadmask', message: 'Submitted, waiting...'},
                                 success: function() {
                                     Ext.Msg.alert('Success', 'Form submitted successfully!');
                                 },
@@ -288,6 +289,7 @@ Ext.define("Mobcli.input.OperationPanel", {
                                     Ext.Msg.alert('Failure', 'Failed to submit form!');                                
                                 }
                             });
+
                         }
                     
                     },

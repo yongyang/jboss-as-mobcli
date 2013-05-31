@@ -83,7 +83,7 @@ public class MobcliServlet extends HttpServlet {
             listOperation(req, resp);
         }
         else if(pathInfo.equals("execute")){ // execute submitted command
-                    executeCommand(req, resp);
+            executeCommand(req, resp);
         }
         else {
             throw new ServletException(new IllegalArgumentException(req.getPathInfo()));
