@@ -32,7 +32,7 @@ public class ResourceLoader extends  ModelNodeLoader{
     }
 
     @Override
-    protected void loadModelNode() {
+    protected void loadModelNode()  throws Exception {
         // wrapper method for read-resource
         String[] commands = new String[]{
                 getAddress() + ":read-resource(include-runtime=true,include-defaults=true)",
@@ -41,25 +41,20 @@ public class ResourceLoader extends  ModelNodeLoader{
                 getAddress() + ":read-children-types"
         };
 
-        try {
-            ModelNode[] result = proxy.executeBatchModelNode(getIp(), getPort(), commands);
+        ModelNode[] result = proxy.executeBatchModelNode(getIp(), getPort(), commands);
 
-            this.readResourceModelNode = result[0];
-            this.readResourceDescriptionModelNode = result[1];
-            this.readChildrenTypeModelNode = result[2];
+        this.readResourceModelNode = result[0];
+        this.readResourceDescriptionModelNode = result[1];
+        this.readChildrenTypeModelNode = result[2];
 
-            ModelNode resourceResponse = result[0].get("result"); //result modelnode
-            if (resourceResponse.isDefined()) {
-                for (ModelNode node : resourceResponse.asList()) {
-                    Property prop = node.asProperty();
-                    String resource = prop.getName();
-                    ModelNode readOperationNamesModelNode = proxy.executeModelNode(getIp(), getPort(), getAddress() + resource + "=*/:read-operation-names");
-                    this.addGenericOperationResult(resource, readOperationNamesModelNode);
-                }
+        ModelNode resourceResponse = result[0].get("result"); //result modelnode
+        if (resourceResponse.isDefined()) {
+            for (ModelNode node : resourceResponse.asList()) {
+                Property prop = node.asProperty();
+                String resource = prop.getName();
+                ModelNode readOperationNamesModelNode = proxy.executeModelNode(getIp(), getPort(), getAddress() + resource + "=*/:read-operation-names");
+                this.addGenericOperationResult(resource, readOperationNamesModelNode);
             }
-        }
-        catch (Exception e) {
-            throw new RuntimeException("Failed to collect resources info.", e);
         }
     }
 

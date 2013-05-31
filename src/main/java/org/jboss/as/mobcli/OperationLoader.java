@@ -28,9 +28,8 @@ public class OperationLoader extends ModelNodeLoader {
     }
 
     @Override
-    protected void loadModelNode() {
+    protected void loadModelNode()  throws Exception {
         
-        try {
             if(isLeaf()) {
                 for(String operName : leafOps) {
                     ModelNode operationDescriptionModelNode = getProxy().executeModelNode(getIp(), getPort(), getAddress() + ":read-operation-description(name=\"" + operName + "\")");
@@ -55,10 +54,6 @@ public class OperationLoader extends ModelNodeLoader {
                     }
                 }
             }
-        }
-        catch (Exception e) {
-            throw new RuntimeException("Failed to collect operation info.", e);
-        }
     }
 
 

@@ -32,7 +32,7 @@ Ext.application({
         
         var outputPanel = Ext.create('Mobcli.output.Panel', 
             {
-                id: 'outputPanel',
+                id: 'ID_OutputPanel',
                 title: 'Output',
                 cls: 'card dark',
                 iconCls: 'search'

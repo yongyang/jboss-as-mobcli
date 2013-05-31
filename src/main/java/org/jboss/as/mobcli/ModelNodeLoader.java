@@ -45,7 +45,7 @@ public abstract class ModelNodeLoader {
         return isLeaf;
     }
 
-    public ModelNodeLoader load(String ip, int port, JSONObject nodeJSON) {
+    public ModelNodeLoader load(String ip, int port, JSONObject nodeJSON) throws Exception {
         this.ip = ip;
         this.port = port;
         this.address = nodeJSON.get("address").toString();
@@ -63,7 +63,7 @@ public abstract class ModelNodeLoader {
         return new ResourceLoader();
     }
     
-    protected abstract void loadModelNode();
+    protected abstract void loadModelNode() throws Exception;
     
     public abstract JSONObject toJSONObject();
 

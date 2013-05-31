@@ -282,15 +282,19 @@ Ext.define("Mobcli.input.OperationPanel", {
                         text: 'Submit',
                         handler: function(btn) {
                             var values = formPanel.getValues();
-                            values.address = formPanel.getAddress();
-                            values.operation = formPanel.getOperation();
+                            values.address = operationPanel.getAddress();
+                            values.operation = operationPanel.getOperation();
                             Ext.Ajax.request({
                                 url : 'cliservlet/execute',
                                 params  : values,
 //                                form: formPanel, // use form directly cause failure due to no enctype
                                 method: 'GET',
-                                success: function() {
-                                    Ext.Msg.alert('Success', 'Form submitted successfully!');
+                                success: function(response, opts) {
+                                    var obj = Ext.decode(response.responseText);
+                                    console.log(obj);
+                                    console.dir(obj);
+                                    Ext.Msg.alert("result", response.responseText);
+                                    Ext.getCmp('ID_OutputPanel').print(operationPanel.getOperation(), obj.data);
                                 },
                                 failure: function() {
                                     Ext.Msg.alert('Failure', 'Failed to submit form!');
