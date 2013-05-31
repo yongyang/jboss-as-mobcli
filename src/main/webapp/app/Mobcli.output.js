@@ -3,6 +3,9 @@ Ext.define('Mobcli.output.Panel', {
     config: {
         layout: 'vbox',
         scrollable: 'both',
+        defaults: {
+            padding: 5
+        },
         items: [
             {
                 xtype: 'toolbar',
@@ -19,15 +22,10 @@ Ext.define('Mobcli.output.Panel', {
         });
     },
     print: function(addressPath, operationResult) {
-        var panel = Ext.create('Ext.Container',{
-            items: [
+        this.add(Ext.create('Ext.Label',
                 {
-                    xtype: 'label',
-                    padding: 5,
                     html: addressPath + "<br><pre>" + operationResult + "</pre> <hr>"
-                }                       
-            ]
-        });
-        this.add(panel);
+                }
+        ));
     }
 });
