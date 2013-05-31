@@ -182,12 +182,16 @@ Ext.define("Mobcli.input.OperationPanel", {
             
             var formPanel = Ext.create('Ext.form.Panel', {
                 ui: 'round',
+                standardSubmit : false,
                 baseParams: {
                     operation: this.getOperation()
                 },
                 listeners: {
                     exception: function(){
                         Ext.Msg.alert('Exception', 'Failed to submit form');
+                    },
+                    beforesubmit: function(panel, values, options, eOpts ) {
+                        console.log(values);                
                     }
                 }
             });
@@ -277,11 +281,29 @@ Ext.define("Mobcli.input.OperationPanel", {
                     {
                         text: 'Submit',
                         handler: function(btn) {
+                            var values = formPanel.getValues();
+                            values.address = formPanel.getAddress();
+                            values.operation = formPanel.getOperation();
+                            Ext.Ajax.request({
+                                url : 'cliservlet/execute',
+                                params  : values,
+//                                form: formPanel, // use form directly cause failure due to no enctype
+                                method: 'GET',
+                                success: function() {
+                                    Ext.Msg.alert('Success', 'Form submitted successfully!');
+                                },
+                                failure: function() {
+                                    Ext.Msg.alert('Failure', 'Failed to submit form!');
+                                }
+                            });
+/*
+//FIXME: !!! formPanel.submit doesn't submite form values, weird
                             formPanel.submit({
                                 url: 'cliservlet/execute',
                                 method: 'GET',
                                 autoAbort: true,
                                 waitMsg: {xtype: 'loadmask', message: 'Submitted, waiting...'},
+                                params: {sleep: 2},
                                 success: function() {
                                     Ext.Msg.alert('Success', 'Form submitted successfully!');
                                 },
@@ -289,6 +311,7 @@ Ext.define("Mobcli.input.OperationPanel", {
                                     Ext.Msg.alert('Failure', 'Failed to submit form!');                                
                                 }
                             });
+*/
 
                         }
                     
