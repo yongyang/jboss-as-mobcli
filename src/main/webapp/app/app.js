@@ -37,8 +37,7 @@ Ext.application({
                 cls: 'card dark',
                 iconCls: 'search'
             });
-        outputPanel.print("read-resouce", "{success: true}");
-        
+
         var tabPanel =  Ext.create("Ext.tab.Panel", {
                 id: 'mainTabPanel',
                 ui: 'dark',

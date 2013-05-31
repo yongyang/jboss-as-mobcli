@@ -2,7 +2,7 @@ Ext.define('Mobcli.output.Panel', {
     extend: 'Ext.Panel',
     config: {
         layout: 'vbox',
-        scrollable: true,
+        scrollable: 'vertical',
         items: [
             {
                 xtype: 'toolbar',
@@ -11,12 +11,20 @@ Ext.define('Mobcli.output.Panel', {
             }
         ]
     },
-    print: function(operation, operationResult) {
-        var panel = Ext.create('Ext.Panel',{
+    initialize: function() {
+        this.callParent();
+        // scroll to end automatically
+        this.getScrollable().getScroller().on('maxpositionchange', function(scroller, max) {
+            scroller.scrollTo(0, max.y);
+        });
+    },
+    print: function(addressPath, operationResult) {
+        var panel = Ext.create('Ext.Container',{
             items: [
                 {
                     xtype: 'label',
-                    html: operation + "<br></pre>" + operationResult + "</pre>"
+                    padding: 5,
+                    html: addressPath + "<br><pre>" + operationResult + "</pre> <hr>"
                 }                       
             ]
         });

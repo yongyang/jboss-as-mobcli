@@ -290,11 +290,12 @@ Ext.define("Mobcli.input.OperationPanel", {
 //                                form: formPanel, // use form directly cause failure due to no enctype
                                 method: 'GET',
                                 success: function(response, opts) {
-                                    var obj = Ext.decode(response.responseText);
-                                    console.log(obj);
-                                    console.dir(obj);
-                                    Ext.Msg.alert("result", response.responseText);
-                                    Ext.getCmp('ID_OutputPanel').print(operationPanel.getOperation(), obj.data);
+                                    var responseJSON = Ext.decode(response.responseText);
+                                    var addressPath = operationPanel.getAddress() + ':' + operationPanel.getOperation()['operation-name'];
+                                    operationPanel.hide();
+                                    operationPanel.destroy();
+                                    Ext.getCmp('mainTabPanel').setActiveItem(Ext.getCmp('ID_OutputPanel'), {type: 'slide', direction: 'right'});
+                                    Ext.getCmp('ID_OutputPanel').print(addressPath, responseJSON.data);
                                 },
                                 failure: function() {
                                     Ext.Msg.alert('Failure', 'Failed to submit form!');
