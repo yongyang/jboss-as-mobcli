@@ -2,7 +2,7 @@ Ext.define('Mobcli.output.Panel', {
     extend: 'Ext.Panel',
     config: {
         layout: 'vbox',
-        scrollable: 'vertical',
+        scrollable: 'both',
         items: [
             {
                 xtype: 'toolbar',
