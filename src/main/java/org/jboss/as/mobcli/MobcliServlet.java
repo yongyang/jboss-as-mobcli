@@ -79,7 +79,10 @@ public class MobcliServlet extends HttpServlet {
         else if(pathInfo.equals("operations")) { // list operations of an resouce node
                     listOperation(req, resp);
         }
-        else if(pathInfo.equals("command")){ // execute submitted command
+        else if(pathInfo.equals("operation")) { // read one operation's resource
+            listOperation(req, resp);
+        }
+        else if(pathInfo.equals("execute")){ // execute submitted command
                     executeCommand(req, resp);
         }
         else {

@@ -172,6 +172,7 @@ Ext.define("Mobcli.input.OperationPanel", {
         
         initialize: function() {
             this.callParent();
+            var operationPanel =  this;
             this.add(
                 Ext.create('Ext.Toolbar', {
                     docked : 'top',
@@ -180,7 +181,15 @@ Ext.define("Mobcli.input.OperationPanel", {
             );
             
             var formPanel = Ext.create('Ext.form.Panel', {
-                ui: 'round'
+                ui: 'round',
+                baseParams: {
+                    operation: this.getOperation()
+                },
+                listeners: {
+                    exception: function(){
+                        Ext.Msg.alert('Exception', 'Failed to submit form');
+                    }
+                }
             });
             
             var fieldSet = Ext.create('Ext.form.FieldSet', {
@@ -197,8 +206,6 @@ Ext.define("Mobcli.input.OperationPanel", {
                         label: paramName,
                         clearIcon: true,
                         required: this.getOperation()['request-properties'][paramName]['required']
-    // use instructions to show the description because some descriptions are too long for placeholder
-    //                    placeHolder: this.getOperation()['request-properties'][key]['description']
                     }));
                 }
                 else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'BOOLEAN'){
@@ -233,10 +240,26 @@ Ext.define("Mobcli.input.OperationPanel", {
                     }));
                 }
                 else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'LIST'){
-                    //TODO:
+                    //TODO: use textarea to input LIST, but needs good doc
+                    fieldSet.add(Ext.create('Ext.field.TextArea',{
+                        name: paramName,
+                        label: paramName,
+                        clearIcon: true,
+                        required: this.getOperation()['request-properties'][paramName]['required'],
+                        placeHolder: this.getOperation()['request-properties'][paramName]['description']
+                    }));
+
                 }
                 else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'OBJECT'){
-                    //TODO:
+                    //TODO: use textarea to input LIST, but needs good doc
+                    fieldSet.add(Ext.create('Ext.field.TextArea',{
+                        name: paramName,
+                        label: paramName,
+                        clearIcon: true,
+                        required: this.getOperation()['request-properties'][paramName]['required'],
+                        placeHolder: this.getOperation()['request-properties'][paramName]['description']
+                    }));
+
                 }
                 else {
                     Ext.Msg.alert('Alert', 'Not supported parameter type: ' + this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE']);
@@ -254,15 +277,24 @@ Ext.define("Mobcli.input.OperationPanel", {
                     {
                         text: 'Submit',
                         handler: function(btn) {
-                            Ext.Msg.alert("Submitting...")
+                            
+                            formPanel.submit({
+                                url: 'cliservlet/execute',
+                                method: 'GET',
+                                success: function() {
+                                    Ext.Msg.alert('Success', 'Form submitted successfully!');
+                                },
+                                failure: function() {
+                                    Ext.Msg.alert('Failure', 'Failed to submit form!');                                
+                                }
+                            });
                         }
                     
                     },
                     {
-                        scope: this,
                         text: 'Cancel',
                         handler: function(btn) {
-                            this.hide();
+                            operationPanel.hide();
                         }
                     }
                 ]
