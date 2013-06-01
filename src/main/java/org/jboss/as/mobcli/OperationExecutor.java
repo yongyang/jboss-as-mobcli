@@ -61,12 +61,25 @@ public class OperationExecutor {
         this.ip = ip;
         this.port = port;
         this.address = address;
-        resultModeNode = getProxy().executeModelNode(getIp(), getPort(), getAddress() + ":" + operationName);
+        this.operationName = operationName;
+        resultModeNode = getProxy().executeModelNode(getIp(), getPort(), getCommand());
         return this;
     }
 
-    public ModelNode getResultModeNode() {
+    private String getCommand(){
+        return getAddress() + ":" + operationName;
+    }
+
+    private ModelNode getResultModeNode() {
         return resultModeNode;
+    }
+
+    @SuppressWarnings("unchecked")
+    public JSONObject toJSONObject() {
+        JSONObject json = new JSONObject();
+        json.put("command", this.getCommand());
+        json.put("result", getResultModeNode().toJSONString(false));
+        return json;
     }
 
 }

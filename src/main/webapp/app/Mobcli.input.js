@@ -291,11 +291,10 @@ Ext.define("Mobcli.input.OperationPanel", {
                                 method: 'GET',
                                 success: function(response, opts) {
                                     var responseJSON = Ext.decode(response.responseText);
-                                    var addressPath = operationPanel.getAddress() + ':' + operationPanel.getOperation()['operation-name'];
                                     operationPanel.hide();
                                     operationPanel.destroy();
                                     Ext.getCmp('mainTabPanel').setActiveItem(Ext.getCmp('ID_OutputPanel'), {type: 'slide', direction: 'right'});
-                                    Ext.getCmp('ID_OutputPanel').print(addressPath, responseJSON.data);
+                                    Ext.getCmp('ID_OutputPanel').print(responseJSON.data);
                                 },
                                 failure: function() {
                                     Ext.Msg.alert('Failure', 'Failed to submit form!');

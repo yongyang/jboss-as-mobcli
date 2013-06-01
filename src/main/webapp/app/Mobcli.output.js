@@ -21,10 +21,10 @@ Ext.define('Mobcli.output.Panel', {
             scroller.scrollTo(0, max.y);
         });
     },
-    print: function(addressPath, operationResult) {
+    print: function(operationResultJSON) {
         this.add(Ext.create('Ext.Label',
                 {
-                    html: addressPath + "<br><pre>" + operationResult + "</pre> <hr>"
+                    html: operationResultJSON.command + "<br><pre>" + operationResultJSON.result + "</pre> <hr>"
                 }
         ));
     }
