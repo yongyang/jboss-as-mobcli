@@ -2,14 +2,9 @@ package org.jboss.as.mobcli;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -112,7 +107,7 @@ public class OperationExecutor {
                         if(!paramString.isEmpty()) {
                             paramString += ",";
                         }
-                        if(isStringType(type)) {
+                        if(isStringyType(type)) {
                             paramString += propName + "=\"" + paramMap.get(propName)[0] + "\"";
                         }
                         else {
@@ -125,12 +120,13 @@ public class OperationExecutor {
         return paramString;
     }
 
-    private boolean isStringType(ModelType type) {
+    private boolean isStringyType(ModelType type) {
             return (type != ModelType.BIG_DECIMAL) &&
                     (type != ModelType.BIG_INTEGER) &&
                     (type != ModelType.DOUBLE) &&
                     (type != ModelType.INT) &&
-                    (type != ModelType.LONG);
+                    (type != ModelType.LONG) &&
+                    (type != ModelType.BOOLEAN);
     }
 
     private void constructCommand() throws Exception {
