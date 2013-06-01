@@ -135,8 +135,8 @@ public class MobcliServlet extends HttpServlet {
 
 
     private void executeCommand(ServletRequest req,  ServletResponse resp) throws Exception {
-        JSONObject json = OperationExecutor.newOperationExecutor().execute("127.0.0.1", 9999, req.getParameter("address"), req.getParameter("operation"), Collections.EMPTY_MAP).toJSONObject();
-        writeResponseJSON(resp, json);
+        JSONObject json = OperationExecutor.newOperationExecutor().execute("127.0.0.1", 9999, req.getParameter("address"), req.getParameter("operation"), req.getParameterMap()).toJSONObject();
+         writeResponseJSON(resp, json);
     }
 
     private void writeResponseJSON(ServletResponse resp, JSONObject resultJSON) throws IOException{

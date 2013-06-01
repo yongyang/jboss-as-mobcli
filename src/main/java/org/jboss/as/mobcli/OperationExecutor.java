@@ -1,6 +1,7 @@
 package org.jboss.as.mobcli;
 
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -22,7 +23,9 @@ public class OperationExecutor {
     private int port;
     private String address;
     private String operationName;
-    private Map<String, Object> paramMap = new HashMap<String, Object>();
+    private Map<String, String[]> paramMap = new HashMap<String, String[]>();
+
+    private String command = null;
 
     private ModelNode resultModeNode;
     protected OperationExecutor() {
@@ -53,21 +56,95 @@ public class OperationExecutor {
         return operationName;
     }
 
-    public Map<String, Object> getParamMap() {
+    public Map<String, String[]> getParamMap() {
         return paramMap;
     }
 
-    public OperationExecutor execute(String ip, int port, String address, String operationName, Map<String, Object> paramMap) throws Exception {
+    public OperationExecutor execute(String ip, int port, String address, String operationName, Map<String, String[]> paramMap) throws Exception {
         this.ip = ip;
         this.port = port;
         this.address = address;
         this.operationName = operationName;
+        this.paramMap = paramMap;
+        constructCommand();
         resultModeNode = getProxy().executeModelNode(getIp(), getPort(), getCommand());
         return this;
     }
 
-    private String getCommand(){
-        return getAddress() + ":" + operationName;
+    private String getParameterString() throws Exception {
+        String paramString = "";
+        ModelNode operationDescriptionModelNode = getProxy().executeModelNode(getIp(), getPort(), getAddress() + ":read-operation-description(name=\"" + operationName + "\")");
+        if(operationDescriptionModelNode.get("outcome").asString().equals("success")) {
+            ModelNode requestProperties = operationDescriptionModelNode.get("result", "request-properties");
+/*
+        "request-properties" : {
+            "name" : {
+                "type" : {
+                    "TYPE_MODEL_VALUE" : "STRING"
+                },
+                "description" : "The name of the attribute to get the value for under the selected resource",
+                "nillable" : false
+            },
+            "include-defaults" : {
+                "type" : {
+                    "TYPE_MODEL_VALUE" : "BOOLEAN"
+                },
+                "description" : "Boolean to enable/disable default reading. In case it is set to false only attribute set by user are returned ignoring undefined.",
+                "required" : false,
+                "nillable" : true,
+                "default" : true
+            }
+        },
+*/
+            if(requestProperties != null) {
+                for(ModelNode requestProperty : requestProperties.asList()) {
+                    String propName = requestProperty.asProperty().getName();
+                    ModelType type = requestProperty.asProperty().getValue().get("type").asType();
+//                    Boolean required = requestProperty.asProperty().getValue().get("required").asBoolean();
+//                    Boolean nillable = requestProperty.asProperty().getValue().get("nillable").asBoolean();
+                    // deal with null value? the result ModelNode includes needed information of properties
+/*
+                    if(required && !paramMap.containsKey(propName)) {
+
+                    }
+*/
+                    if(paramMap.containsKey(propName) && !paramMap.get(propName)[0].isEmpty()) {
+                        if(!paramString.isEmpty()) {
+                            paramString += ",";
+                        }
+                        if(isStringType(type)) {
+                            paramString += propName + "=\"" + paramMap.get(propName)[0] + "\"";
+                        }
+                        else {
+                            paramString += propName + "=" + paramMap.get(propName)[0];
+                        }
+                    }
+                }
+            }
+        }
+        return paramString;
+    }
+
+    private boolean isStringType(ModelType type) {
+            return (type != ModelType.BIG_DECIMAL) &&
+                    (type != ModelType.BIG_INTEGER) &&
+                    (type != ModelType.DOUBLE) &&
+                    (type != ModelType.INT) &&
+                    (type != ModelType.LONG);
+    }
+
+    private void constructCommand() throws Exception {
+        String command = getAddress() + ":" + operationName;
+        String paramString = getParameterString();
+        if(paramString != null && !paramString.isEmpty()) {
+            command += "(" + paramString + ")";
+        }
+        this.command = command;
+
+    }
+
+    private synchronized String getCommand() {
+        return command;
     }
 
     private ModelNode getResultModeNode() {
