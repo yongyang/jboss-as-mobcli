@@ -121,12 +121,13 @@ public class OperationExecutor {
     }
 
     private boolean isStringyType(ModelType type) {
-            return (type != ModelType.BIG_DECIMAL) &&
-                    (type != ModelType.BIG_INTEGER) &&
-                    (type != ModelType.DOUBLE) &&
-                    (type != ModelType.INT) &&
-                    (type != ModelType.LONG) &&
-                    (type != ModelType.BOOLEAN);
+        return (type != ModelType.BIG_DECIMAL) &&
+                (type != ModelType.BIG_INTEGER) &&
+                (type != ModelType.DOUBLE) &&
+                (type != ModelType.INT) &&
+                (type != ModelType.LONG) &&
+                (type != ModelType.BOOLEAN) &&
+                (type != ModelType.LIST);
     }
 
     private void constructCommand() throws Exception {

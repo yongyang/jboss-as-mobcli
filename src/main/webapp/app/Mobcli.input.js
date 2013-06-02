@@ -250,7 +250,7 @@ Ext.define("Mobcli.input.OperationPanel", {
                         label: paramName,
                         clearIcon: true,
                         required: this.getOperation()['request-properties'][paramName]['required'],
-                        placeHolder: this.getOperation()['request-properties'][paramName]['description']
+                        placeHolder: '[ ]'
                     }));
 
                 }
@@ -269,6 +269,13 @@ Ext.define("Mobcli.input.OperationPanel", {
                     Ext.Msg.alert('Alert', 'Not supported parameter type: ' + this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE']);
                 }
                 fieldSet.setInstructions(fieldSet.getInstructions() + "<br>" + "<b>" + paramName + ": </b>" +  this.getOperation()['request-properties'][paramName]['description']);
+                if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'LIST'){
+                    fieldSet.setInstructions(fieldSet.getInstructions() + "<b>[</b>");
+                    for(var vtype in this.getOperation()['request-properties'][paramName]['value-type']) {
+                        fieldSet.setInstructions(fieldSet.getInstructions() + ' <b><i>' + this.getOperation()['request-properties'][paramName]['value-type'][vtype]['type']['TYPE_MODEL_VALUE'] + ':</b></i>' + this.getOperation()['request-properties'][paramName]['value-type'][vtype]['description']);
+                    }
+                    fieldSet.setInstructions(fieldSet.getInstructions() + "<b> ]</b>");
+                }
             }
             formPanel.add(fieldSet);
             var buttonContainer = Ext.create('Ext.Container', {
