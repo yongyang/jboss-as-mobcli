@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author <a href="mailto:yyang@redhat.com">Young Yang</a>
+ * @author <a href="mailto:yyang@redhat.com">Yong Yang</a>
  */
 public class OperationNamesLoader extends ModelNodeLoader {
 

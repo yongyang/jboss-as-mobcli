@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author <a href="mailto:yyang@redhat.com">Young Yang</a>
+ * @author <a href="mailto:yyang@redhat.com">Yong Yang</a>
  */
 public class OperationExecutor {
 
@@ -91,7 +91,7 @@ public class OperationExecutor {
             }
         },
 */
-            if(requestProperties.getType() != ModelType.UNDEFINED) { // has requestProperties
+            if(requestProperties.isDefined()) { // has requestProperties
                 for(ModelNode requestProperty : requestProperties.asList()) {
                     String propName = requestProperty.asProperty().getName();
                     ModelType type = requestProperty.asProperty().getValue().get("type").asType();

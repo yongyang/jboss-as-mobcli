@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author <a href="mailto:yyang@redhat.com">Young Yang</a>
+ * @author <a href="mailto:yyang@redhat.com">Yong Yang</a>
  */
 public class OperationDescriptionLoader extends ModelNodeLoader {
     
