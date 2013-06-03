@@ -161,13 +161,14 @@ Ext.define("Mobcli.input.OperationPanel", {
         config: {
             address: null,
             operation: null,
+            floating: true,
             modal : true,
             centered : true,
             width : '90%',
             height : '80%',
             layout: 'fit',
             hideOnMaskTap: true,
-            scrollable : true
+            scrollable : 'vertical'
         },
         
         initialize: function() {
@@ -209,7 +210,8 @@ Ext.define("Mobcli.input.OperationPanel", {
                         name: paramName,
                         label: paramName,
                         clearIcon: true,
-                        required: this.getOperation()['request-properties'][paramName]['required']
+                        required: this.getOperation()['request-properties'][paramName]['required'],
+                        placeHolder: this.getOperation()['request-properties'][paramName]['description']
                     }));
                 }
                 else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'BOOLEAN'){
@@ -218,7 +220,8 @@ Ext.define("Mobcli.input.OperationPanel", {
                         label: paramName,
                         clearIcon: true,
                         value: 'true',
-                        required: this.getOperation()['request-properties'][paramName]['required']
+                        required: this.getOperation()['request-properties'][paramName]['required'],
+                        placeHolder: this.getOperation()['request-properties'][paramName]['description']
                     }));
                 }
                 else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'INT'){
@@ -228,7 +231,8 @@ Ext.define("Mobcli.input.OperationPanel", {
                         clearIcon: true,
                         minValue: this.getOperation()['request-properties'][paramName]['min'],
                         maxValue: this.getOperation()['request-properties'][paramName]['max'],
-                        required: this.getOperation()['request-properties'][paramName]['required']
+                        required: this.getOperation()['request-properties'][paramName]['required'],
+                        placeHolder: this.getOperation()['request-properties'][paramName]['description']
                     }));
                 }
                 else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'BYTES'){
@@ -239,23 +243,12 @@ Ext.define("Mobcli.input.OperationPanel", {
                         minValue: this.getOperation()['request-properties'][paramName]['min'] ? this.getOperation()['request-properties'][paramName]['min'] : -127 ,
                         maxValue: this.getOperation()['request-properties'][paramName]['max'] ? this.getOperation()['request-properties'][paramName]['max'] : 127,
                         required: this.getOperation()['request-properties'][paramName]['required'],
+                        placeHolder: this.getOperation()['request-properties'][paramName]['description'],
                         stepValue: 1,
                         cycle: true
                     }));
                 }
                 else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'LIST'){
-                    //TODO: use textarea to input LIST, but needs good doc
-                    fieldSet.add(Ext.create('Ext.field.TextArea',{
-                        name: paramName,
-                        label: paramName,
-                        clearIcon: true,
-                        required: this.getOperation()['request-properties'][paramName]['required'],
-                        placeHolder: '[ ]'
-                    }));
-
-                }
-                else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'OBJECT'){
-                    //TODO: use textarea to input LIST, but needs good doc
                     fieldSet.add(Ext.create('Ext.field.TextArea',{
                         name: paramName,
                         label: paramName,
@@ -263,21 +256,38 @@ Ext.define("Mobcli.input.OperationPanel", {
                         required: this.getOperation()['request-properties'][paramName]['required'],
                         placeHolder: this.getOperation()['request-properties'][paramName]['description']
                     }));
+                }
+                else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'OBJECT'){
+                    fieldSet.add(Ext.create('Ext.field.TextArea',{
+                        name: paramName,
+                        label: paramName,
+                        clearIcon: true,
+                        required: this.getOperation()['request-properties'][paramName]['required'],
+                        placeHolder: this.getOperation()['request-properties'][paramName]['description'],
+                    }));
 
                 }
                 else {
                     Ext.Msg.alert('Alert', 'Not supported parameter type: ' + this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE']);
                 }
-                fieldSet.setInstructions(fieldSet.getInstructions() + "<br>" + "<b>" + paramName + ": </b>" +  this.getOperation()['request-properties'][paramName]['description']);
-                if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'LIST'){
-                    fieldSet.setInstructions(fieldSet.getInstructions() + "<b>[</b>");
-                    for(var vtype in this.getOperation()['request-properties'][paramName]['value-type']) {
-                        fieldSet.setInstructions(fieldSet.getInstructions() + ' <b><i>' + this.getOperation()['request-properties'][paramName]['value-type'][vtype]['type']['TYPE_MODEL_VALUE'] + ':</b></i>' + this.getOperation()['request-properties'][paramName]['value-type'][vtype]['description']);
-                    }
-                    fieldSet.setInstructions(fieldSet.getInstructions() + "<b> ]</b>");
-                }
             }
             formPanel.add(fieldSet);
+
+            var helpPanel = Ext.create('Ext.Panel', {
+                layout: 'fit',
+                scrollable: 'both',
+                width: '100%',
+                height: '50%',
+                items: [
+                    {
+                        xtype: 'label',
+                        html: '<hr><pre>' + Ext.JSON.encode(operationPanel.getOperation())+'</pre>'
+                    }
+                ]
+            });
+
+            formPanel.add(helpPanel);
+
             var buttonContainer = Ext.create('Ext.Container', {
                 layout: {type: 'hbox', pack: 'end'},
                 defaults: {
@@ -285,6 +295,34 @@ Ext.define("Mobcli.input.OperationPanel", {
                     margin: 10
                 },
                 items: [
+                    {
+                        text: 'Help',
+                        handler: function(btn) {
+                            var overlay = new Ext.Panel({
+                                floating: true,
+                                modal: true,
+                                centered: false,
+                                width: '80%',
+                                height: '80%',
+                                hideOnMaskTap: true,
+                                styleHtmlContent: true,
+                                scroll: 'both',
+                                items: [
+                                    {
+                                        docked: 'top',
+                                        xtype: 'toolbar',
+                                        title: 'Help'
+                                    },
+                                    {
+                                        xtype: 'label',
+                                        html: 'abcd'
+                                    }
+                                ]
+                            });
+                            overlay.setCentered(true);
+                            overlay.showBy(btn);
+                        }
+                    },
                     {
                         text: 'Submit',
                         handler: function(btn) {
@@ -337,7 +375,7 @@ Ext.define("Mobcli.input.OperationPanel", {
             });
             formPanel.add(buttonContainer);
             this.add(formPanel);
-
+//            this.add(helpPanel);
         }
     }
 );
@@ -361,15 +399,6 @@ Ext.define("Mobcli.input.NavigationView", {
             address: node.address,
             listeners: {
                 itemtap: function(list, index, target, record, e, eOpts) {
-                    var leaf = record.getData().leaf;
-//                Ext.Msg.alert("List Address", list.getAddress());
-
-                    /*
-                     Ext.create('Mobcli.input.FormPanel', {
-                     name: record.getData()['operation-name'],
-                     description: record.getData()['description']
-                     }).show();
-                     */
                     console.log("itemtap: " + record.getData()['description']);
                     list.showOperationPanel(record.getData());
                 }
@@ -384,12 +413,10 @@ Ext.define("Mobcli.input.NavigationView", {
         }
         var store = operationListView.getStore();
         if(store != null) {
-            store.setData({});
+            store.setData({}); // clear data
         }
-        else {
-            store = Ext.create('Mobcli.input.OperationStore');
-            operationListView.setStore(store);
-        }
+        store = Ext.create('Mobcli.input.OperationStore');
+        operationListView.setStore(store);
         this.push(operationListView);
 //        console.log(node);
         store.load({params: {node: Ext.JSON.encode(node)}});        
