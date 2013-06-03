@@ -10,9 +10,9 @@ public abstract class ModelNodeLoader {
 
     private ModelControllerProxy proxy = ModelControllerProxy.getInstance();
 
-    private String ip;
-    private int port;
-    private String address;
+    protected String ip;
+    protected int port;
+    protected String address;
 
     private boolean isGeneric;
     private boolean isLeaf;
@@ -55,10 +55,15 @@ public abstract class ModelNodeLoader {
         return this;
     }
     
-    public static OperationLoader newOperationLoader() {
-        return new OperationLoader(); 
+    public static OperationNamesLoader newOperationsLoader() {
+        return new OperationNamesLoader(); 
     }
-    
+
+    public static OperationDescriptionLoader newOperationDescriptionLoader() {
+        return new OperationDescriptionLoader();
+    }
+
+
     public static ResourceLoader newResourceLoader() {
         return new ResourceLoader();
     }

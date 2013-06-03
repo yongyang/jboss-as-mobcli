@@ -3,8 +3,8 @@ Ext.ns('Mobcli');
 Ext.require('Ext.tab.Panel');
 
 Ext.application({
+    
     launch: function() {
-
         var inputNavigationView = Ext.create("Mobcli.input.NavigationView", 
             {
                 id: 'inputNavigationView',
@@ -12,21 +12,22 @@ Ext.application({
                 cls: 'card dark',
                 iconCls: 'search',
                 items: [
-                    Ext.create('Mobcli.input.NodeListView',                {
-                        title: 'PATH:',
-                        address: '~',
-                        store: {
-                            data: [
-                                Ext.create('Mobcli.input.NodeModel', {
-                                    name: '/', 
-                                    address: '/', 
-                                    value: '/', 
-                                    displayname: '/', 
-                                    leaf: false,
-                                    generic: false}).getData()
-                            ]
-                        }
-                    })            
+                    Ext.create('Mobcli.input.NodeListView',
+                        {
+                            title: 'PATH:',
+                            address: '~',
+                            store: {
+                                data: [
+                                    Ext.create('Mobcli.input.NodeModel', {
+                                        name: '/', 
+                                        address: '/', 
+                                        value: '/', 
+                                        displayname: '/', 
+                                        leaf: false,
+                                        generic: false}).getData()
+                                ]
+                            }
+                        })            
                 ]
             });
         

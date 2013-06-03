@@ -36,7 +36,6 @@ public class ResourceLoader extends  ModelNodeLoader{
         // wrapper method for read-resource
         String[] commands = new String[]{
                 getAddress() + ":read-resource(include-runtime=true,include-defaults=true)",
-                //TODO: ":read-resource-description(recursive-depth=1)" read children's description one time, so the children's tooltip can be displayed after loading
                 getAddress() + ":read-resource-description",
                 getAddress() + ":read-children-types"
         };

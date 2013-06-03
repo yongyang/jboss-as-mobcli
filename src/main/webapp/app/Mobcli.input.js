@@ -143,16 +143,30 @@ Ext.define('Mobcli.input.OperationListView', {
         address: null,
         ui: 'round',
         singleton: true,
-        itemTpl: '<div>{operation-name} <small>({description}<small>)</div>',
+        itemTpl: '<div>{operation-name}</div>',
         emptyText: 'No operation'
     },
     showOperationPanel: function(operation) {
-        //TODO: memory leak???
-        var popup = Ext.create('Mobcli.input.OperationPanel', {
-            operation: operation,
-            address: this.getAddress()
+        var listView = this;
+        var operationName = operation['operation-name'];
+        Ext.Ajax.request({
+            url : 'cliservlet/operationDesc',
+            params  : {name: operationName, address: listView.getAddress()},
+            method: 'GET',
+            success: function(response, opts) {
+                var responseJSON = Ext.decode(response.responseText);
+                console.dir(responseJSON);
+                var popup = Ext.create('Mobcli.input.OperationPanel', {
+                    operation: responseJSON.data.operationDesc,
+                    operationDesc: responseJSON.data.operationDescString,
+                    address: listView.getAddress()
+                });
+                Ext.Viewport.add(popup);
+            },
+            failure: function() {
+                Ext.Msg.alert('Failure', 'Failed to get operation description!');
+            }
         });
-        Ext.Viewport.add(popup);            
     }
 });
 
@@ -161,6 +175,7 @@ Ext.define("Mobcli.input.OperationPanel", {
         config: {
             address: null,
             operation: null,
+            operationDesc: null,
             floating: true,
             modal : true,
             centered : true,
@@ -192,7 +207,7 @@ Ext.define("Mobcli.input.OperationPanel", {
                         Ext.Msg.alert('Exception', 'Failed to submit form');
                     },
                     beforesubmit: function(panel, values, options, eOpts ) {
-                        console.log(values);                
+                        console.log(values);
                     }
                 }
             });
@@ -224,7 +239,7 @@ Ext.define("Mobcli.input.OperationPanel", {
                         placeHolder: this.getOperation()['request-properties'][paramName]['description']
                     }));
                 }
-                else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'INT'){
+                else if(this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'INT' || this.getOperation()['request-properties'][paramName]['type']['TYPE_MODEL_VALUE'] == 'LONG'){
                     fieldSet.add(Ext.create('Ext.field.Number',{
                         name: paramName,
                         label: paramName,
@@ -263,7 +278,7 @@ Ext.define("Mobcli.input.OperationPanel", {
                         label: paramName,
                         clearIcon: true,
                         required: this.getOperation()['request-properties'][paramName]['required'],
-                        placeHolder: this.getOperation()['request-properties'][paramName]['description'],
+                        placeHolder: this.getOperation()['request-properties'][paramName]['description']
                     }));
 
                 }
@@ -296,39 +311,39 @@ Ext.define("Mobcli.input.OperationPanel", {
                 },
                 items: [
                     {
-                        text: 'Help',
+                        text: 'Description',
                         handler: function(btn) {
                             var overlay = new Ext.Panel({
                                 floating: true,
                                 modal: true,
-                                centered: false,
-                                width: '80%',
-                                height: '80%',
+                                centered: true,
+                                width: '98%',
+                                height: '60%',
                                 hideOnMaskTap: true,
                                 styleHtmlContent: true,
-                                scroll: 'both',
+                                scrollable: 'both',
                                 items: [
                                     {
                                         docked: 'top',
                                         xtype: 'toolbar',
-                                        title: 'Help'
+                                        title: 'Description of ' + operationPanel.getOperation()['operation-name']
                                     },
                                     {
                                         xtype: 'label',
-                                        html: 'abcd'
+                                        html: '<pre>' + operationPanel.getOperationDesc() + '</pre>'
                                     }
                                 ]
                             });
-                            overlay.setCentered(true);
-                            overlay.showBy(btn);
+                            overlay.showBy(operationPanel);
                         }
                     },
                     {
                         text: 'Submit',
                         handler: function(btn) {
                             var values = formPanel.getValues();
+                            console.dir(operationPanel.getAddress());
                             values.address = operationPanel.getAddress();
-                            values.operation = operationPanel.getOperation();
+                            values.operation = operationPanel.getOperation()['operation-name'];
                             Ext.Ajax.request({
                                 url : 'cliservlet/execute',
                                 params  : values,
@@ -375,7 +390,6 @@ Ext.define("Mobcli.input.OperationPanel", {
             });
             formPanel.add(buttonContainer);
             this.add(formPanel);
-//            this.add(helpPanel);
         }
     }
 );
@@ -392,7 +406,7 @@ Ext.define("Mobcli.input.NavigationView", {
             store: store
         });
         this.push(newList);
-        store.load({params: {node: Ext.JSON.encode(node)}});
+        store.load({params: {node: Ext.encode(node)}});
     },
     pushOperationListView : function(node) {
         var operationListView = Ext.create('Mobcli.input.OperationListView', {
@@ -419,7 +433,7 @@ Ext.define("Mobcli.input.NavigationView", {
         operationListView.setStore(store);
         this.push(operationListView);
 //        console.log(node);
-        store.load({params: {node: Ext.JSON.encode(node)}});        
+        store.load({params: {node: Ext.encode(node)}});        
     }
 });
 

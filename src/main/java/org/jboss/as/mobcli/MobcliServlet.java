@@ -1,7 +1,6 @@
 package org.jboss.as.mobcli;
 
 import org.jboss.dmr.ModelNode;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -16,11 +15,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.RunnableFuture;
 
 /**
  * @author <a href="mailto:yyang@redhat.com">Yong Yang</a>
@@ -81,8 +78,8 @@ public class MobcliServlet extends HttpServlet {
             else if(pathInfo.equals("operations")) { // list operations of an resouce node
                 listOperation(req, resp);
             }
-            else if(pathInfo.equals("operation")) { // read one operation's resource
-                listOperation(req, resp);
+            else if(pathInfo.equals("operationDesc")) { // read one operation description
+                showOperationDescription(req, resp);
             }
             else if(pathInfo.equals("execute")){ // execute submitted command
                 executeCommand(req, resp);
@@ -129,8 +126,16 @@ public class MobcliServlet extends HttpServlet {
     private void listOperation(ServletRequest req,  ServletResponse resp)  throws Exception {
         String nodeString = req.getParameter("node");
         JSONObject nodeJSON = (JSONObject)JSONValue.parse(nodeString);
-        JSONObject operationJSON = ModelNodeLoader.newOperationLoader().load("127.0.0.1", 9999, nodeJSON).toJSONObject();
+        JSONObject operationJSON = ModelNodeLoader.newOperationsLoader().load("127.0.0.1", 9999, nodeJSON).toJSONObject();
         writeResponseJSON(resp, operationJSON);        
+    }
+
+    private void showOperationDescription(ServletRequest req, ServletResponse resp)  throws Exception {
+        JSONObject fakeNodeJSON = new JSONObject();
+        fakeNodeJSON.put("name", req.getParameter("name"));
+        fakeNodeJSON.put("address", req.getParameter("address"));
+        JSONObject operationJSON = ModelNodeLoader.newOperationDescriptionLoader().load("127.0.0.1", 9999, fakeNodeJSON).toJSONObject();
+        writeResponseJSON(resp, operationJSON);
     }
 
 

@@ -91,7 +91,7 @@ public class OperationExecutor {
             }
         },
 */
-            if(requestProperties != null) {
+            if(requestProperties.getType() != ModelType.UNDEFINED) { // has requestProperties
                 for(ModelNode requestProperty : requestProperties.asList()) {
                     String propName = requestProperty.asProperty().getName();
                     ModelType type = requestProperty.asProperty().getValue().get("type").asType();
