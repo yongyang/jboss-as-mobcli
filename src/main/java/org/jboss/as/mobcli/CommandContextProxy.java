@@ -7,12 +7,9 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -22,26 +19,23 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author <a href="mailto:yyang@redhat.com">Yong Yang</a>
  */
-public class ModelControllerProxy {
+public class CommandContextProxy {
 
-    private final static ModelControllerProxy INSTANCE = new ModelControllerProxy();
-
-    private static final String DEFAULT_IP = "127.0.0.1";
-    private static final int DEFAULT_PORT = 9999;
+    private final static CommandContextProxy INSTANCE = new CommandContextProxy();
 
     // host:port=>ASInstanceContext
-    private Map<String, ASInstanceContext> cmdCtxMap = new ConcurrentHashMap<String, ASInstanceContext>();
+    private Map<String, ASCommandContext> cmdCtxMap = new ConcurrentHashMap<String, ASCommandContext>();
 
     // scheduled service to terminate idle CommandContext
     private ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     private Runnable runnable = new Runnable() {
         public void run() {
-            for(Iterator<Map.Entry<String, ASInstanceContext>> it = cmdCtxMap.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry<String, ASInstanceContext> entry = it.next();
-                ASInstanceContext asInstanceContext = entry.getValue();
-                if(!asInstanceContext.isIdle()) {
-                    asInstanceContext.close();
+            for(Iterator<Map.Entry<String, ASCommandContext>> it = cmdCtxMap.entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry<String, ASCommandContext> entry = it.next();
+                ASCommandContext asCommandContext = entry.getValue();
+                if(!asCommandContext.isIdle()) {
+                    asCommandContext.close();
                     it.remove();
                 }
             }
@@ -52,16 +46,16 @@ public class ModelControllerProxy {
         scheduledExecutorService.scheduleWithFixedDelay(runnable, 5, 5, TimeUnit.MINUTES);
     }
 
-    private ModelControllerProxy() {
+    private CommandContextProxy() {
     }
 
-    public static ModelControllerProxy getInstance() {
+    public static CommandContextProxy getInstance() {
         return INSTANCE;
     }
 
     private void initASInstanceContext(String host, int port, String username, String password) throws CliInitializationException {
-        ASInstanceContext asInstanceContext = new ASInstanceContext(host,port,username,password);
-        cmdCtxMap.put(host+":"+port, asInstanceContext);
+        ASCommandContext asCommandContext = new ASCommandContext(host,port,username,password);
+        cmdCtxMap.put(host+":"+port, asCommandContext);
     }
 
     public String execute(String ip, int port, String command) throws Exception {
@@ -73,12 +67,12 @@ public class ModelControllerProxy {
         if(!cmdCtxMap.containsKey(key)) {
             initASInstanceContext(ip, port, "", "");
         }
-        ASInstanceContext asInstanceContext = cmdCtxMap.get(key);
+        ASCommandContext asCommandContext = cmdCtxMap.get(key);
         try {
-            return asInstanceContext.execute(command);
+            return asCommandContext.execute(command);
         }
         finally {
-            asInstanceContext.close();
+            asCommandContext.close();
         }
     }
 
@@ -96,19 +90,19 @@ public class ModelControllerProxy {
         if(!cmdCtxMap.containsKey(key)) {
             initASInstanceContext(ip, port, "", "");
         }
-        ASInstanceContext asInstanceContext = cmdCtxMap.get(key);
+        ASCommandContext asCommandContext = cmdCtxMap.get(key);
 
         ModelNode[] responses = new ModelNode[commands.length];
         try {
 
             for(int i=0; i<commands.length; i++){
-                ModelNode response = asInstanceContext.execute(commands[i]);
+                ModelNode response = asCommandContext.execute(commands[i]);
                 responses[i] = response;
             }
             return responses;
         }
         finally {
-            asInstanceContext.close();
+            asCommandContext.close();
         }
     }
 
@@ -117,17 +111,16 @@ public class ModelControllerProxy {
         scheduledExecutorService.shutdownNow();
     }
 
-    class ASInstanceContext {
+    class ASCommandContext {
         private String ip;
         private int port;
         private String username;
         private String password;
         private CommandContext cmdCtx;
-        private ModelNode rootModelNode;
 
         private long lastActive = 0;
 
-        ASInstanceContext(String ip, int port, String username, String password) throws CliInitializationException {
+        ASCommandContext(String ip, int port, String username, String password) throws CliInitializationException {
             this.ip = ip;
             this.port = port;
             this.username = username;
@@ -174,7 +167,7 @@ public class ModelControllerProxy {
     }
 
     public static void main(String[] args) throws Exception{
-        ModelControllerProxy proxy = ModelControllerProxy.getInstance();
+        CommandContextProxy proxy = CommandContextProxy.getInstance();
         System.out.println(proxy.execute("127.0.0.1", 9999, "/:read-resource-description"));
         proxy.destroy();
     }

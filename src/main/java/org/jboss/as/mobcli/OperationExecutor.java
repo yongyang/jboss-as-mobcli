@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class OperationExecutor {
 
-    private ModelControllerProxy proxy = ModelControllerProxy.getInstance();
+    private CommandContextProxy proxy = CommandContextProxy.getInstance();
 
     private String ip;
     private int port;
@@ -31,7 +31,7 @@ public class OperationExecutor {
         return new OperationExecutor();
     }
 
-    public ModelControllerProxy getProxy() {
+    public CommandContextProxy getProxy() {
         return proxy;
     }
 

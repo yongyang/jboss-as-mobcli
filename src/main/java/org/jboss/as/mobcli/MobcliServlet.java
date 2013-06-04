@@ -25,9 +25,14 @@ import java.util.concurrent.Executors;
 @WebServlet(urlPatterns = "/cliservlet/*", asyncSupported = true)
 public class MobcliServlet extends HttpServlet {
 
-    private static final ModelControllerProxy proxy = ModelControllerProxy.getInstance();
+    private static final CommandContextProxy proxy = CommandContextProxy.getInstance();
 
     private static final ExecutorService executor = Executors.newCachedThreadPool();
+    
+    //TODO: httpsession record current ip port username password
+
+    private static final String DEFAULT_IP = "127.0.0.1";
+    private static final int DEFAULT_PORT = 9999;
 
     private static final AsyncListener asyncListener = new AsyncListener() {
         public void onComplete(AsyncEvent event) throws IOException {

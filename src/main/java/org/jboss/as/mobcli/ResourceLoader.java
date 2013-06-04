@@ -25,7 +25,7 @@ public class ResourceLoader extends  ModelNodeLoader{
     //resourceName=>ModelNode
     private Map<String, ModelNode> genericOperations = new HashMap<String, ModelNode>();
 
-    private ModelControllerProxy proxy = ModelControllerProxy.getInstance();
+    private CommandContextProxy proxy = CommandContextProxy.getInstance();
 
 
     protected ResourceLoader() {

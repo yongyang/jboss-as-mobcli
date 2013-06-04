@@ -8,7 +8,7 @@ import org.json.simple.JSONObject;
  */
 public abstract class ModelNodeLoader {
 
-    private ModelControllerProxy proxy = ModelControllerProxy.getInstance();
+    private CommandContextProxy proxy = CommandContextProxy.getInstance();
 
     protected String ip;
     protected int port;
@@ -21,7 +21,7 @@ public abstract class ModelNodeLoader {
     protected ModelNodeLoader() {
     }
 
-    public ModelControllerProxy getProxy() {
+    public CommandContextProxy getProxy() {
         return proxy;
     }
 
