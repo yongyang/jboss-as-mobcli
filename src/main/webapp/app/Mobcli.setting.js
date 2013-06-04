@@ -1,3 +1,5 @@
+Ext.ns('Mobcli.setting');
+
 Ext.define('Mobcli.setting.SettingPanel', {
     extend: 'Ext.Panel',
     config: {

@@ -1,3 +1,5 @@
+Ext.ns('Mobcli.output');
+
 Ext.define('Mobcli.output.Panel', {
     extend: 'Ext.Panel',
     config: {

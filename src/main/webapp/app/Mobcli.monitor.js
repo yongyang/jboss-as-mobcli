@@ -1,3 +1,5 @@
+Ext.ns('Mobcli.monitor');
+
 Ext.define('Mobcli.monitor.MonitorPanel', {
     extend: 'Ext.Panel',
     config: {

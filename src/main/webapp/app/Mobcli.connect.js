@@ -1,3 +1,5 @@
+Ext.ns('Mobcli.connect');
+
 Ext.define('Mobcli.connect.ConnectionPanel', {
     extend: 'Ext.Panel',
     config: {

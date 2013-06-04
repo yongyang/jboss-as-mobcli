@@ -1,3 +1,5 @@
+Ext.ns('Mobcli.about');
+
 Ext.define('Mobcli.about.AboutPanel', {
     extend: 'Ext.Panel',
     config: {
