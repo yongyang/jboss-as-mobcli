@@ -311,7 +311,7 @@ Ext.define("Mobcli.input.OperationPanel", {
                                     {
                                         docked: 'top',
                                         xtype: 'toolbar',
-                                        title: 'Description of ' + operationPanel.getOperation()['operation-name']
+                                        title: 'Operation Description'
                                     },
                                     {
                                         xtype: 'label',
