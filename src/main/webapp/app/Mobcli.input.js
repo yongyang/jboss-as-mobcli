@@ -288,21 +288,6 @@ Ext.define("Mobcli.input.OperationPanel", {
             }
             formPanel.add(fieldSet);
 
-            var helpPanel = Ext.create('Ext.Panel', {
-                layout: 'fit',
-                scrollable: 'both',
-                width: '100%',
-                height: '50%',
-                items: [
-                    {
-                        xtype: 'label',
-                        html: '<hr><pre>' + Ext.JSON.encode(operationPanel.getOperation())+'</pre>'
-                    }
-                ]
-            });
-
-            formPanel.add(helpPanel);
-
             var buttonContainer = Ext.create('Ext.Container', {
                 layout: {type: 'hbox', pack: 'end'},
                 defaults: {
