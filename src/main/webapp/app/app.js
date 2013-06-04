@@ -8,7 +8,6 @@ Ext.application({
         var inputNavigationView = Ext.create("Mobcli.input.NavigationView", 
             {
                 id: 'inputNavigationView',
-                title: 'Input',
                 cls: 'card dark',
                 iconCls: 'search',
                 items: [
@@ -36,7 +35,7 @@ Ext.application({
                 id: 'ID_OutputPanel',
                 title: 'Output',
                 cls: 'card dark',
-                iconCls: 'search'
+                iconCls: 'download'
             });
 
         var tabPanel =  Ext.create("Ext.tab.Panel", {
@@ -56,20 +55,14 @@ Ext.application({
                 items: [
                     inputNavigationView,
                     outputPanel,
-                    {
-                        title: 'Monitor',
-                        html: 'Tabbars are <code>ui:"dark"</code> by default, but also have light variants.',
+                    Ext.create('Mobcli.monitor.MonitorPanel', {
                         cls: 'card dark',
-                        iconCls: 'time',
-                        hidden: (Ext.filterPlatform('ie10') && Ext.os.is.Phone) ? true : false
-                    },
-                    {
-                        title: 'Settings',
-                        html: 'Tabbars are <code>ui:"dark"</code> by default, but also have light variants.',
+                        iconCls: 'time'                        
+                    }),
+                    Ext.create('Mobcli.setting.SettingPanel', {
                         cls: 'card dark',
-                        iconCls: 'settings',
-                        hidden: (Ext.filterPlatform('ie10') && Ext.os.is.Phone) ? true : false
-                    },
+                        iconCls: 'settings'
+                    }),
                     Ext.create('Mobcli.about.AboutPanel')
                 ]
                 });

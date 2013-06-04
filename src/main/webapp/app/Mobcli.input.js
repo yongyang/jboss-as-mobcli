@@ -382,6 +382,7 @@ Ext.define("Mobcli.input.OperationPanel", {
 Ext.define("Mobcli.input.NavigationView", {
     extend: "Ext.NavigationView",
     config: {
+        title: 'Input',
         items:[]
     },
     pushNodeListView: function(node) {

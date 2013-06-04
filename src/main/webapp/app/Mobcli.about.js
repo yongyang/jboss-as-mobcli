@@ -4,11 +4,23 @@ Ext.define('Mobcli.about.AboutPanel', {
         title: 'About',
         iconCls: 'info',
         cls: 'card',
+        layout: {
+            type: 'vbox',
+            pack: 'center',
+            align: 'middle'
+        },
         items: [
             {
                 xtype: 'toolbar',
                 docked: 'top',
                 title: 'About'
+            },
+            {
+                xtype: 'img',
+                src: 'image/as7.png',
+                height: 140,
+                width: 140,
+                align: 'center'
             },
             {
                 xtype: 'label',
