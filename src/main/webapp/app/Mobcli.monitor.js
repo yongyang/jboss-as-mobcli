@@ -12,7 +12,7 @@ Ext.define('Mobcli.monitor.MonitorPanel', {
             },
             {
                 xtype: 'label',
-                html: 'Monitor Panel'
+                html: 'Monitor Panel, Under construction'
             }
         ]
     }

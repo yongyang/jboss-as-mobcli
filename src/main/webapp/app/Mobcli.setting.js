@@ -12,7 +12,7 @@ Ext.define('Mobcli.setting.SettingPanel', {
             },
             {
                 xtype: 'label',
-                html: 'Setting Panel'
+                html: 'Setting Panel, Under construction'
             }
         ]
     }
