@@ -20,7 +20,7 @@ Ext.define('Mobcli.connect.ConnectionPanel', {
                     {
                         xtype: 'fieldset',
                         title: 'Please input Host & Port:',
-                        instructions: 'NOTE: Address localhost/127.0.0.1 means the server runs servlet container',
+                        instructions: 'NOTE: Address localhost/127.0.0.1 means the server running servlet container',
                         items: [
 
                             {
