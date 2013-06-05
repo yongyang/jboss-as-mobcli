@@ -159,12 +159,7 @@ public class CommandContextProxy {
 
         public void close() {
             if(!cmdCtx.isTerminated()) {
-                try {
-                    cmdCtx.terminateSession();
-                }
-                catch (Exception e) {
-                    // terminate quietly
-                }
+                cmdCtx.terminateSession();
             }
             lastActive = 0;
         }
