@@ -52,9 +52,13 @@ public class CommandContextProxy {
     public static CommandContextProxy getInstance() {
         return INSTANCE;
     }
+    
+    public void connect(String host, int port, String user, String password) throws Exception{
+        initASInstanceContext(host, port, user, password);
+    }
 
-    private void initASInstanceContext(String host, int port, String username, String password) throws CliInitializationException {
-        ASCommandContext asCommandContext = new ASCommandContext(host,port,username,password);
+    private void initASInstanceContext(String host, int port, String user, String password) throws CliInitializationException {
+        ASCommandContext asCommandContext = new ASCommandContext(host,port,user,password);
         cmdCtxMap.put(host+":"+port, asCommandContext);
     }
 

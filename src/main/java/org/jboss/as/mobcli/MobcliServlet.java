@@ -14,6 +14,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -89,6 +90,9 @@ public class MobcliServlet extends HttpServlet {
             else if(pathInfo.equals("execute")){ // execute submitted command
                 executeCommand(req, resp);
             }
+            else if(pathInfo.equals("connect")) {
+                connect(req,resp);
+            }
             else {
                 throw new ServletException(new IllegalArgumentException(req.getPathInfo()));
             }
@@ -121,7 +125,24 @@ public class MobcliServlet extends HttpServlet {
 
     }
 
+    private void connect(ServletRequest req,  ServletResponse resp) throws Exception{
+        String host = req.getParameter("host");
+        String port = req.getParameter("port");
+        String user = req.getParameter("user");
+        String password = req.getParameter("password");
+        CommandContextProxy.getInstance().connect(host, Integer.parseInt(port), user, password);
+        
+        HttpSession httpSession = ((HttpServletRequest)req).getSession(true);
+        httpSession.setAttribute("host", host);
+        httpSession.setAttribute("port", Integer.parseInt(port));
+        httpSession.setAttribute("user", user);
+        httpSession.setAttribute("password", password);
+        JSONObject resultJSON = new JSONObject();
+        writeResponseJSON(resp, resultJSON);
+    }
+
     private void listResource(ServletRequest req,  ServletResponse resp) throws Exception{
+        checkSession(req);
         String nodeString = req.getParameter("node");
         JSONObject nodeJSON = (JSONObject)JSONValue.parse(nodeString);
         JSONObject resourceJSON = ModelNodeLoader.newResourceLoader().load("127.0.0.1", 9999, nodeJSON).toJSONObject();
@@ -129,6 +150,7 @@ public class MobcliServlet extends HttpServlet {
     }
 
     private void listOperation(ServletRequest req,  ServletResponse resp)  throws Exception {
+        checkSession(req);
         String nodeString = req.getParameter("node");
         JSONObject nodeJSON = (JSONObject)JSONValue.parse(nodeString);
         JSONObject operationJSON = ModelNodeLoader.newOperationsLoader().load("127.0.0.1", 9999, nodeJSON).toJSONObject();
@@ -136,6 +158,7 @@ public class MobcliServlet extends HttpServlet {
     }
 
     private void showOperationDescription(ServletRequest req, ServletResponse resp)  throws Exception {
+        checkSession(req);
         JSONObject fakeNodeJSON = new JSONObject();
         fakeNodeJSON.put("name", req.getParameter("name"));
         fakeNodeJSON.put("address", req.getParameter("address"));
@@ -145,6 +168,7 @@ public class MobcliServlet extends HttpServlet {
 
 
     private void executeCommand(ServletRequest req,  ServletResponse resp) throws Exception {
+        checkSession(req);
         JSONObject json = OperationExecutor.newOperationExecutor().execute("127.0.0.1", 9999, req.getParameter("address"), req.getParameter("operation"), req.getParameterMap()).toJSONObject();
          writeResponseJSON(resp, json);
     }
@@ -181,4 +205,10 @@ public class MobcliServlet extends HttpServlet {
         }
     }
 
+    private void checkSession(ServletRequest req) throws ServletException{
+        HttpSession session = ((HttpServletRequest)req).getSession(false);
+        if(session == null) {
+            throw new ServletException("Session Timeout!");
+        }
+    }
 }

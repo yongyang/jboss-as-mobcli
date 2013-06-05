@@ -3,11 +3,28 @@ Ext.ns('Mobcli');
 Ext.require('Ext.tab.Panel');
 
 Ext.application({
-    name: 'Mobile CLI for JBoss AS7',
+    name: 'MobileCLI',
     launch: function() {
-        var inputNavigationView = Ext.create("Mobcli.input.NavigationView", 
+        var connectPanel = Ext.create('Mobcli.connect.ConnectionPanel', {
+            id: 'ID_connectionPanel',
+            cls: 'card dark'
+        });
+        
+        var topPanel = Ext.create('Ext.Panel', {
+            id: 'ID_topPanel',
+            fullscreen: true,
+            layout: 'card',
+            items: [
+                connectPanel
+            ]           
+        });
+
+
+        Ext.Viewport.add(topPanel);
+        
+        var inputNavigationView = Ext.create('Mobcli.input.NavigationView', 
             {
-                id: 'inputNavigationView',
+                id: 'ID_inputNavigationView',
                 cls: 'card dark',
                 iconCls: 'search',
                 items: [
@@ -39,7 +56,7 @@ Ext.application({
             });
 
         var tabPanel =  Ext.create("Ext.tab.Panel", {
-                id: 'mainTabPanel',
+                id: 'ID_mainTabPanel',
                 ui: 'dark',
                 tabBar: {
 //                    ui: Ext.filterPlatform('blackberry') || Ext.filterPlatform('ie10') ? 'dark' : 'light',
@@ -67,6 +84,7 @@ Ext.application({
                 ]
                 });
 
-        Ext.Viewport.add(tabPanel);
+        topPanel.add(tabPanel);
+
     }
 });

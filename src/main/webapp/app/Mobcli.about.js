@@ -8,8 +8,7 @@ Ext.define('Mobcli.about.AboutPanel', {
         cls: 'card',
         layout: {
             type: 'vbox',
-            pack: 'center',
-            align: 'middle'
+            pack: 'center'
         },
         items: [
             {

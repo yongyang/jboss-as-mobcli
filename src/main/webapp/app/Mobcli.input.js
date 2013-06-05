@@ -42,7 +42,7 @@ Ext.define("Mobcli.input.NodeStore", {
 
             listeners : {
                 exception : function(proxy, response, operation) {
-                    Ext.Msg.alert('ERROR', 'Exception caught');
+                    Ext.Msg.alert('ERROR', 'Caught Exception while reading resource nodes.');
                 }
             }
         }
@@ -72,12 +72,12 @@ Ext.define('Mobcli.input.NodeListView', {
                         Ext.Msg.alert("Alert", "Couldn't expand a generic path.");
                     }
                     else {
-                        Ext.getCmp('inputNavigationView').pushNodeListView(record.getData());
+                        Ext.getCmp('ID_inputNavigationView').pushNodeListView(record.getData());
                     }
                 },
                 disclose: function(list, record, target, index, e, eOpts ) {
                     e.stopEvent();
-                    Ext.getCmp('inputNavigationView').pushOperationListView(record.getData());
+                    Ext.getCmp('ID_inputNavigationView').pushOperationListView(record.getData());
                     return false;
                 }
             }
@@ -163,8 +163,13 @@ Ext.define('Mobcli.input.OperationListView', {
                 });
                 Ext.Viewport.add(popup);
             },
-            failure: function() {
-                Ext.Msg.alert('Failure', 'Failed to get operation description!');
+            failure: function(response, opts) {
+                if(response.responseText.indexOf('Session Timeout') > 0) {
+                    Ext.Msg.alert('Timeout', 'Please exit and reconnect.');
+                }
+                else {
+                    Ext.Msg.alert('Failure', 'Failed to get operation description!');
+                }
             }
         });
     }
@@ -338,11 +343,16 @@ Ext.define("Mobcli.input.OperationPanel", {
                                     var responseJSON = Ext.decode(response.responseText);
                                     operationPanel.hide();
                                     operationPanel.destroy();
-                                    Ext.getCmp('mainTabPanel').setActiveItem(Ext.getCmp('ID_OutputPanel'), {type: 'slide', direction: 'right'});
+                                    Ext.getCmp('ID_mainTabPanel').setActiveItem(Ext.getCmp('ID_OutputPanel'), {type: 'slide', direction: 'right'});
                                     Ext.getCmp('ID_OutputPanel').print(responseJSON.data);
                                 },
-                                failure: function() {
-                                    Ext.Msg.alert('Failure', 'Failed to submit form!');
+                                failure: function(response, opts) {
+                                    if(response.responseText.indexOf('Session Timeout') > 0) {
+                                        Ext.Msg.alert('Timeout', 'Please exit and reconnect.');
+                                    }
+                                    else {
+                                        Ext.Msg.alert('Failure', 'Failed to submit form!');
+                                    }
                                 }
                             });
 /*
