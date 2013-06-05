@@ -330,6 +330,11 @@ Ext.define("Mobcli.input.OperationPanel", {
                     {
                         text: 'Submit',
                         handler: function(btn) {
+                            Ext.Viewport.mask({
+                                xtype: 'loadmask',
+                                message: 'connect...'
+                            });
+
                             var values = formPanel.getValues();
                             console.dir(operationPanel.getAddress());
                             values.address = operationPanel.getAddress();
@@ -343,7 +348,7 @@ Ext.define("Mobcli.input.OperationPanel", {
                                     var responseJSON = Ext.decode(response.responseText);
                                     operationPanel.hide();
                                     operationPanel.destroy();
-                                    Ext.getCmp('ID_mainTabPanel').setActiveItem(Ext.getCmp('ID_OutputPanel'), {type: 'slide', direction: 'right'});
+                                    Ext.getCmp('ID_mainTabPanel').setActiveItem(Ext.getCmp('ID_OutputPanel'));
                                     Ext.getCmp('ID_OutputPanel').print(responseJSON.data);
                                 },
                                 failure: function(response, opts) {
@@ -353,7 +358,10 @@ Ext.define("Mobcli.input.OperationPanel", {
                                     else {
                                         Ext.Msg.alert('Failure', 'Failed to submit form!');
                                     }
-                                }
+                                },
+                                callback: function() {
+                                    Ext.Viewport.unmask();
+                                }                                
                             });
 /*
 //FIXME: !!! formPanel.submit doesn't submite form values, weird

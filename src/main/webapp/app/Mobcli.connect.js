@@ -83,7 +83,7 @@ Ext.define('Mobcli.connect.ConnectionPanel', {
                                         method: 'GET',
                                         success: function(response, opts) {
                                             var topPanel = Ext.getCmp('ID_topPanel');
-                                            topPanel.setActiveItem(1);
+                                            topPanel.animateActiveItem(1, {type: 'pop', direction: 'left', duration: 200});
                                         },
                                         failure: function(response, opts) {
                                             Ext.Msg.alert('Failure', 'Failed to connect ' + Ext.getCmp('ID_host').getValue() + ":" + Ext.getCmp('ID_port').getValue());
