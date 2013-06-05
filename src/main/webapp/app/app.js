@@ -3,7 +3,7 @@ Ext.ns('Mobcli');
 Ext.require('Ext.tab.Panel');
 
 Ext.application({
-    
+    name: 'Mobile CLI for JBoss AS7',
     launch: function() {
         var inputNavigationView = Ext.create("Mobcli.input.NavigationView", 
             {
