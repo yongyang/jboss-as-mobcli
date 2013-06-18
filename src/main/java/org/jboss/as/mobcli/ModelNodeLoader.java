@@ -10,8 +10,7 @@ public abstract class ModelNodeLoader {
 
     private CommandContextProxy proxy = CommandContextProxy.getInstance();
 
-    protected String ip;
-    protected int port;
+    protected SessionObject session;
     protected String address;
 
     private boolean isGeneric;
@@ -25,12 +24,8 @@ public abstract class ModelNodeLoader {
         return proxy;
     }
 
-    public String getIp() {
-        return ip;
-    }
-
-    public int getPort() {
-        return port;
+    public SessionObject getSessionObject() {
+        return session;
     }
 
     public String getAddress() {
@@ -45,9 +40,8 @@ public abstract class ModelNodeLoader {
         return isLeaf;
     }
 
-    public ModelNodeLoader load(String ip, int port, JSONObject nodeJSON) throws Exception {
-        this.ip = ip;
-        this.port = port;
+    public ModelNodeLoader load(SessionObject session, JSONObject nodeJSON) throws Exception {
+        this.session = session;
         this.address = nodeJSON.get("address").toString();
         this.isGeneric = (Boolean)nodeJSON.get("generic");
         this.isLeaf = (Boolean)nodeJSON.get("leaf");

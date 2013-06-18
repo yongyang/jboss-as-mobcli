@@ -40,7 +40,7 @@ public class ResourceLoader extends  ModelNodeLoader{
                 getAddress() + ":read-children-types"
         };
 
-        ModelNode[] result = proxy.executeBatchModelNode(getIp(), getPort(), commands);
+        ModelNode[] result = proxy.executeBatchModelNode(getSessionObject(), commands);
 
         this.readResourceModelNode = result[0];
         this.readResourceDescriptionModelNode = result[1];
@@ -51,7 +51,7 @@ public class ResourceLoader extends  ModelNodeLoader{
             for (ModelNode node : resourceResponse.asList()) {
                 Property prop = node.asProperty();
                 String resource = prop.getName();
-                ModelNode readOperationNamesModelNode = proxy.executeModelNode(getIp(), getPort(), getAddress() + resource + "=*/:read-operation-names");
+                ModelNode readOperationNamesModelNode = proxy.executeModelNode(getSessionObject(), getAddress() + resource + "=*/:read-operation-names");
                 this.addGenericOperationResult(resource, readOperationNamesModelNode);
             }
         }

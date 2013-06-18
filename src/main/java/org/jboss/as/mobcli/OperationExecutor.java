@@ -13,9 +13,8 @@ import java.util.Map;
 public class OperationExecutor {
 
     private CommandContextProxy proxy = CommandContextProxy.getInstance();
-
-    private String ip;
-    private int port;
+    
+    private SessionObject session;
     private String address;
     private String operationName;
     private Map<String, String[]> paramMap = new HashMap<String, String[]>();
@@ -35,12 +34,8 @@ public class OperationExecutor {
         return proxy;
     }
 
-    public String getIp() {
-        return ip;
-    }
-
-    public int getPort() {
-        return port;
+    public SessionObject getSessionObject() {
+        return session;
     }
 
     public String getAddress() {
@@ -55,20 +50,19 @@ public class OperationExecutor {
         return paramMap;
     }
 
-    public OperationExecutor execute(String ip, int port, String address, String operationName, Map<String, String[]> paramMap) throws Exception {
-        this.ip = ip;
-        this.port = port;
+    public OperationExecutor execute(SessionObject session, String address, String operationName, Map<String, String[]> paramMap) throws Exception {
+        this.session = session;
         this.address = address;
         this.operationName = operationName;
         this.paramMap = paramMap;
         constructCommand();
-        resultModeNode = getProxy().executeModelNode(getIp(), getPort(), getCommand());
+        resultModeNode = getProxy().executeModelNode(getSessionObject(), getCommand());
         return this;
     }
 
     private String getParameterString() throws Exception {
         String paramString = "";
-        ModelNode operationDescriptionModelNode = getProxy().executeModelNode(getIp(), getPort(), getAddress() + ":read-operation-description(name=\"" + operationName + "\")");
+        ModelNode operationDescriptionModelNode = getProxy().executeModelNode(getSessionObject(), getAddress() + ":read-operation-description(name=\"" + operationName + "\")");
         if(operationDescriptionModelNode.get("outcome").asString().equals("success")) {
             ModelNode requestProperties = operationDescriptionModelNode.get("result", "request-properties");
 /*

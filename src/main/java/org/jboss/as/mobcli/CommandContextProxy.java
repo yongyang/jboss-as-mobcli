@@ -23,19 +23,20 @@ public class CommandContextProxy {
 
     private final static CommandContextProxy INSTANCE = new CommandContextProxy();
 
-    // host:port=>ASInstanceContext
-    private Map<String, ASCommandContext> cmdCtxMap = new ConcurrentHashMap<String, ASCommandContext>();
+    // host:SessionObject=>ASInstanceContext
+    private Map<SessionObject, ASCommandContext> cmdCtxMap = new ConcurrentHashMap<SessionObject, ASCommandContext>();
 
     // scheduled service to terminate idle CommandContext
     private ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     private Runnable runnable = new Runnable() {
         public void run() {
-            for(Iterator<Map.Entry<String, ASCommandContext>> it = cmdCtxMap.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry<String, ASCommandContext> entry = it.next();
+            for(Iterator<Map.Entry<SessionObject, ASCommandContext>> it = cmdCtxMap.entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry<SessionObject, ASCommandContext> entry = it.next();
                 ASCommandContext asCommandContext = entry.getValue();
                 if(!asCommandContext.isIdle()) {
                     asCommandContext.close();
+                    //TODO: don't remove, will initial again automatically
                     it.remove();
                 }
             }
@@ -53,25 +54,24 @@ public class CommandContextProxy {
         return INSTANCE;
     }
     
-    public void connect(String host, int port, String user, String password) throws Exception{
-        initASInstanceContext(host, port, user, password);
+    public void connect(SessionObject session) throws Exception{
+        initASInstanceContext(session);
     }
 
-    private void initASInstanceContext(String host, int port, String user, String password) throws CliInitializationException {
-        ASCommandContext asCommandContext = new ASCommandContext(host,port,user,password);
-        cmdCtxMap.put(host+":"+port, asCommandContext);
+    private void initASInstanceContext(SessionObject session) throws CliInitializationException {
+        ASCommandContext asCommandContext = new ASCommandContext(session.getHost(),session.getPort(),session.getUser(), session.getPassword());
+        cmdCtxMap.put(session, asCommandContext);
     }
 
-    public String execute(String ip, int port, String command) throws Exception {
-        return executeModelNode(ip, port, command).toJSONString(false);
+    public String execute(SessionObject session, String command) throws Exception {
+        return executeModelNode(session, command).toJSONString(false);
     }
 
-    public ModelNode executeModelNode(String ip, int port, String command) throws Exception {
-        String key = ip + ":" +port;
-        if(!cmdCtxMap.containsKey(key)) {
-            initASInstanceContext(ip, port, "", "");
+    public ModelNode executeModelNode(SessionObject session, String command) throws Exception {
+        if(!cmdCtxMap.containsKey(session)) {
+            initASInstanceContext(session);
         }
-        ASCommandContext asCommandContext = cmdCtxMap.get(key);
+        ASCommandContext asCommandContext = cmdCtxMap.get(session);
         try {
             return asCommandContext.execute(command);
         }
@@ -80,8 +80,8 @@ public class CommandContextProxy {
         }
     }
 
-    public String[] executeBatch(String ip, int port, String[] commands) throws Exception {
-        ModelNode[] nodes = executeBatchModelNode(ip, port, commands);
+    public String[] executeBatch(SessionObject session, String[] commands) throws Exception {
+        ModelNode[] nodes = executeBatchModelNode(session, commands);
         String[] jsons = new String[nodes.length];
         for(int i=0; i<nodes.length; i++){
             jsons[i] = nodes[i].toJSONString(false);
@@ -89,12 +89,11 @@ public class CommandContextProxy {
         return jsons;
     }
 
-    public ModelNode[] executeBatchModelNode(String ip, int port, String[] commands) throws Exception {
-        String key = ip + ":" +port;
-        if(!cmdCtxMap.containsKey(key)) {
-            initASInstanceContext(ip, port, "", "");
+    public ModelNode[] executeBatchModelNode(SessionObject session, String[] commands) throws Exception {
+        if(!cmdCtxMap.containsKey(session)) {
+            initASInstanceContext(session);
         }
-        ASCommandContext asCommandContext = cmdCtxMap.get(key);
+        ASCommandContext asCommandContext = cmdCtxMap.get(session);
 
         ModelNode[] responses = new ModelNode[commands.length];
         try {
@@ -171,8 +170,10 @@ public class CommandContextProxy {
     }
 
     public static void main(String[] args) throws Exception{
+/*
         CommandContextProxy proxy = CommandContextProxy.getInstance();
         System.out.println(proxy.execute("127.0.0.1", 9999, "/:read-resource-description"));
         proxy.destroy();
+*/
     }
 }

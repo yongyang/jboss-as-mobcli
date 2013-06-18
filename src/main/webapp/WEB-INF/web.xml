@@ -3,5 +3,15 @@
  "http://java.sun.com/dtd/web-app_2_3.dtd" >
 
 <web-app>
-  <display-name>Mobile cli for JBoss AS 7</display-name>
+    <display-name>Mobile cli for JBoss AS 7</display-name>
+    <distributable/>
+    <servlet>
+        <servlet-name>MobcliServlet</servlet-name>
+        <servlet-class>org.jboss.as.mobcli.MobcliServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MobcliServlet</servlet-name>
+        <url-pattern>/cliservlet/*</url-pattern>
+    </servlet-mapping>
 </web-app>

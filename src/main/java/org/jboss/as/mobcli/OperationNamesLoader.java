@@ -53,7 +53,7 @@ public class OperationNamesLoader extends ModelNodeLoader {
             }
             else {
                 //TODO: 可以只返回operation names列表，点击 operation 时再 read-operation-description
-                readOperationNamesModelNode = getProxy().executeModelNode(getIp(), getPort(), getAddress() + ":read-operation-names");
+                readOperationNamesModelNode = getProxy().executeModelNode(getSessionObject(), getAddress() + ":read-operation-names");
                 if (!readOperationNamesModelNode.get("outcome").asString().equals("failed")) {
                     for (ModelNode name : readOperationNamesModelNode.get("result").asList()) {
                         String operName = name.asString();

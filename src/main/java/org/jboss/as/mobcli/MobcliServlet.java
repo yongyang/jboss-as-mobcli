@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,12 +24,14 @@ import java.util.concurrent.Executors;
 /**
  * @author <a href="mailto:yyang@redhat.com">Yong Yang</a>
  */
-@WebServlet(urlPatterns = "/cliservlet/*", asyncSupported = true)
+@WebServlet(urlPatterns = "/cliservlet/*", asyncSupported = false)
 public class MobcliServlet extends HttpServlet {
 
     private static final CommandContextProxy proxy = CommandContextProxy.getInstance();
 
     private static final ExecutorService executor = Executors.newCachedThreadPool();
+    
+    private static final String SESSION_KEY="__MOBCLI__";
     
     //TODO: httpsession record current ip port username password
 
@@ -130,46 +133,46 @@ public class MobcliServlet extends HttpServlet {
         String port = req.getParameter("port");
         String user = req.getParameter("user");
         String password = req.getParameter("password");
-        CommandContextProxy.getInstance().connect(host, Integer.parseInt(port), user, password);
+        
+        SessionObject session = new SessionObject(host, Integer.parseInt(port), user, password);
+        
+        CommandContextProxy.getInstance().connect(session);
         
         HttpSession httpSession = ((HttpServletRequest)req).getSession(true);
-        httpSession.setAttribute("host", host);
-        httpSession.setAttribute("port", Integer.parseInt(port));
-        httpSession.setAttribute("user", user);
-        httpSession.setAttribute("password", password);
+        httpSession.setAttribute(SESSION_KEY, session);
         JSONObject resultJSON = new JSONObject();
         writeResponseJSON(resp, resultJSON);
     }
 
     private void listResource(ServletRequest req,  ServletResponse resp) throws Exception{
-        checkSession(req);
+        SessionObject session = checkSession(req);
         String nodeString = req.getParameter("node");
         JSONObject nodeJSON = (JSONObject)JSONValue.parse(nodeString);
-        JSONObject resourceJSON = ModelNodeLoader.newResourceLoader().load("127.0.0.1", 9999, nodeJSON).toJSONObject();
+        JSONObject resourceJSON = ModelNodeLoader.newResourceLoader().load(session, nodeJSON).toJSONObject();
         writeResponseJSON(resp, resourceJSON);
     }
 
     private void listOperation(ServletRequest req,  ServletResponse resp)  throws Exception {
-        checkSession(req);
+        SessionObject session = checkSession(req);
         String nodeString = req.getParameter("node");
         JSONObject nodeJSON = (JSONObject)JSONValue.parse(nodeString);
-        JSONObject operationJSON = ModelNodeLoader.newOperationsLoader().load("127.0.0.1", 9999, nodeJSON).toJSONObject();
+        JSONObject operationJSON = ModelNodeLoader.newOperationsLoader().load(session, nodeJSON).toJSONObject();
         writeResponseJSON(resp, operationJSON);        
     }
 
     private void showOperationDescription(ServletRequest req, ServletResponse resp)  throws Exception {
-        checkSession(req);
+        SessionObject session = checkSession(req);
         JSONObject fakeNodeJSON = new JSONObject();
         fakeNodeJSON.put("name", req.getParameter("name"));
         fakeNodeJSON.put("address", req.getParameter("address"));
-        JSONObject operationJSON = ModelNodeLoader.newOperationDescriptionLoader().load("127.0.0.1", 9999, fakeNodeJSON).toJSONObject();
+        JSONObject operationJSON = ModelNodeLoader.newOperationDescriptionLoader().load(session, fakeNodeJSON).toJSONObject();
         writeResponseJSON(resp, operationJSON);
     }
 
 
     private void executeCommand(ServletRequest req,  ServletResponse resp) throws Exception {
-        checkSession(req);
-        JSONObject json = OperationExecutor.newOperationExecutor().execute("127.0.0.1", 9999, req.getParameter("address"), req.getParameter("operation"), req.getParameterMap()).toJSONObject();
+        SessionObject session = checkSession(req);
+        JSONObject json = OperationExecutor.newOperationExecutor().execute(session, req.getParameter("address"), req.getParameter("operation"), req.getParameterMap()).toJSONObject();
          writeResponseJSON(resp, json);
     }
 
@@ -205,10 +208,88 @@ public class MobcliServlet extends HttpServlet {
         }
     }
 
-    private void checkSession(ServletRequest req) throws ServletException{
+    private SessionObject checkSession(ServletRequest req) throws ServletException{
         HttpSession session = ((HttpServletRequest)req).getSession(false);
         if(session == null) {
             throw new ServletException("Session Timeout!");
         }
+        return (SessionObject)session.getAttribute(SESSION_KEY);
+    }
+    
+    private String getHost(ServletRequest req) {
+        HttpSession httpSession = ((HttpServletRequest)req).getSession(true);
+        return (String)httpSession.getAttribute("host");        
+    }
+
+    private int getPort(ServletRequest req) {
+        HttpSession httpSession = ((HttpServletRequest)req).getSession(true);
+        return (Integer)httpSession.getAttribute("port");
+    }
+
+    private String getUser(ServletRequest req) {
+        HttpSession httpSession = ((HttpServletRequest)req).getSession(true);
+        return (String)httpSession.getAttribute("user");
+    }
+
+    private String getPassword(ServletRequest req) {
+        HttpSession httpSession = ((HttpServletRequest)req).getSession(true);
+        return (String)httpSession.getAttribute("password");
+    }
+    
+    
+}
+
+class SessionObject implements Serializable {
+    private String host;
+    private int port;
+    private String user;
+    private String password;
+
+    SessionObject(String host, int port, String user, String password) {
+        this.host = host;
+        this.port = port;
+        this.user = user;
+        this.password = password;
+    }
+
+    String getHost() {
+        return host;
+    }
+
+    int getPort() {
+        return port;
+    }
+
+    String getUser() {
+        return user;
+    }
+
+    String getPassword() {
+        return password;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SessionObject that = (SessionObject) o;
+
+        if (port != that.port) return false;
+        if (!host.equals(that.host)) return false;
+        if (!password.equals(that.password)) return false;
+        if (!user.equals(that.user)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = host.hashCode();
+        result = 31 * result + port;
+        result = 31 * result + user.hashCode();
+        result = 31 * result + password.hashCode();
+        return result;
     }
 }
+

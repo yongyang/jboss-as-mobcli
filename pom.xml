@@ -22,6 +22,7 @@
       <dependency>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-cli</artifactId>
+        <!--<scope>provided</scope>-->
         <version>7.1.1.Final</version>
     </dependency>
       <dependency>
@@ -70,8 +71,33 @@
           </pluginRepository>
 
       </pluginRepositories>
+    
+    <build>
+        <finalName>mobcli</finalName>
+        
+        <plugins>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <warName>mobcli</warName>
+                    <!--<outputFileNameMapping>@{artifactId}@-@{baseVersion}@.@{extension}@</outputFileNameMapping>-->
+                    <!--<packagingExcludes>**/javax/**/*.*,**/client/local/**/*.class</packagingExcludes>-->
 
-  <build>
-    <finalName>mobcli</finalName>
-  </build>
+                    <webResources>
+                        <resource>
+                            <!-- this is relative to the pom.xml directory -->
+                            <!--<directory>src/${webDescriptor}</directory>-->
+                            <directory>src/main/webapp</directory>
+                        </resource>
+                    </webResources>
+                    <archive>
+                        <manifestEntries>
+                            <!--<Dependencies>org.jboss.as.cli,org.jboss.dmr</Dependencies>-->
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+
+    </build>
 </project>

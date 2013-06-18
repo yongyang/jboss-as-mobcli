@@ -22,9 +22,8 @@ public class OperationDescriptionLoader extends ModelNodeLoader {
     }
 
     @Override
-    public ModelNodeLoader load(String ip, int port, JSONObject nodeJSON) throws Exception {
-        this.ip = ip;
-        this.port = port;
+    public ModelNodeLoader load(SessionObject session, JSONObject nodeJSON) throws Exception {
+        this.session = session;
         this.address = nodeJSON.get("address").toString();
         this.operationName = nodeJSON.get("name").toString();
         loadModelNode();
@@ -37,7 +36,7 @@ public class OperationDescriptionLoader extends ModelNodeLoader {
 
     @Override
     protected void loadModelNode()  throws Exception {
-        operationDescriptionModelNode = getProxy().executeModelNode(getIp(), getPort(), getAddress() + ":read-operation-description(name=\"" + getOperationName() + "\")");
+        operationDescriptionModelNode = getProxy().executeModelNode(getSessionObject(), getAddress() + ":read-operation-description(name=\"" + getOperationName() + "\")");
     }
 
 
