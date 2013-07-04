@@ -1,6 +1,21 @@
 Ext.ns('Mobcli');
 
-Ext.require('Ext.tab.Panel');
+Ext.Loader.setConfig({
+    enabled: true,
+    disableCaching:false
+});
+
+Ext.require(
+    [
+        'Ext.tab.Panel',
+        'Ext.navigation.View',
+        'Ext.data.Store',
+        'Ext.data.Model',
+        'Ext.dataview.List',
+        'Ext.form.Panel',
+        'Ext.MessageBox'
+    ]
+);
 
 Ext.application({
     name: 'MobileCLI',

@@ -24,7 +24,7 @@ public class CommandContextProxy {
     private final static CommandContextProxy INSTANCE = new CommandContextProxy();
 
     // host:SessionObject=>ASInstanceContext
-    private Map<SessionObject, ASCommandContext> cmdCtxMap = new ConcurrentHashMap<SessionObject, ASCommandContext>();
+    private final Map<SessionObject, ASCommandContext> cmdCtxMap = new ConcurrentHashMap<SessionObject, ASCommandContext>();
 
     // scheduled service to terminate idle CommandContext
     private ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
@@ -43,8 +43,8 @@ public class CommandContextProxy {
         }};
 
     {
-        // close idle connection every 5m
-        scheduledExecutorService.scheduleWithFixedDelay(runnable, 5, 5, TimeUnit.MINUTES);
+        // close idle connection every 15m
+        scheduledExecutorService.scheduleWithFixedDelay(runnable, 15, 15, TimeUnit.MINUTES);
     }
 
     private CommandContextProxy() {

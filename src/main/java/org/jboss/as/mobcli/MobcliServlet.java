@@ -24,7 +24,7 @@ import java.util.concurrent.Executors;
 /**
  * @author <a href="mailto:yyang@redhat.com">Yong Yang</a>
  */
-@WebServlet(urlPatterns = "/cliservlet/*", asyncSupported = false)
+//@WebServlet(urlPatterns = "/cliservlet/*", asyncSupported = false)
 public class MobcliServlet extends HttpServlet {
 
     private static final CommandContextProxy proxy = CommandContextProxy.getInstance();

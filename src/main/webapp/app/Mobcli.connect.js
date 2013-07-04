@@ -1,5 +1,10 @@
 Ext.ns('Mobcli.connect');
 
+Ext.require(
+    [
+        'Ext.MessageBox'
+    ]
+);
 Ext.define('Mobcli.connect.ConnectionPanel', {
     extend: 'Ext.Panel',
     config: {
